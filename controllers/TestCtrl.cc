@@ -17,13 +17,13 @@ void TestCtrl::asyncHandleHttpRequest(
     // show DB connection
     auto clientPtr = drogon::app().getDbClient();
     clientPtr->execSqlAsync(
-        "select * from user_account where id=9",
+        "select * from user where id=9",
         [](const drogon::orm::Result &result) {
             std::cout << result.size() << " rows selected!" << std::endl;
             int i = 0;
             for (auto row : result) {
                 std::cout << i++ << ": user name is "
-                          << row["user_name"].as<std::string>() << std::endl;
+                          << row["username"].as<std::string>() << std::endl;
             }
         },
         [](const drogon::orm::DrogonDbException &e) {

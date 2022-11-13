@@ -1,13 +1,10 @@
 {
     "db_clients": [
         {
-            //rdbms: Server type, postgresql,mysql or sqlite3, "postgresql" by default
             "rdbms": "mysql",
-            //filename: Sqlite3 db file name
-            // "filename":"sqlite3",
             "host": "rm-uf66u3l39yrglobxa5o.mysql.rds.aliyuncs.com",
             "port": 3306,
-            "dbname": "test",
+            "dbname": "rail_ticket",
             "user": "testdata",
             "passwd": "Bjtu2022",
             "is_fast": false,
@@ -77,15 +74,13 @@
         "static_files_cache_time": 5,
         "simple_controllers_map": [
             {
-                "path": "/path/name",
-                "controller": "controllerClassName",
+                "path": "/simple/controller",
+                "controller": "TestCtrl",
                 "http_methods": [
                     "get",
                     "post"
                 ],
-                "filters": [
-                    "FilterClassName"
-                ]
+                "filters": ["LoginFilter"]
             }
         ],
         "idle_connection_timeout": 60,

@@ -1,5 +1,12 @@
 #include <drogon/HttpAppFramework.h>
 int main() {
+    std::cout << "     _\n"
+              << "  __| |_ __ ___   __ _  ___  _ __\n"
+              << " / _` | '__/ _ \\ / _` |/ _ \\| '_ \\\n"
+              << "| (_| | | | (_) | (_| | (_) | | | |\n"
+              << " \\__,_|_|  \\___/ \\__, |\\___/|_| |_|\n"
+              << "                 |___/" << std::endl;
+    std::cout << "Drogon version: " << drogon::getVersion() << std::endl;
     // Set HTTP listener address and port
     drogon::app().addListener("0.0.0.0", 80);
     // Load config file
