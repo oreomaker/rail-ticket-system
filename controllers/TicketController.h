@@ -11,6 +11,7 @@ public:
                   "/absolute/path/{1}/{2}/list", Get);
 
     METHOD_LIST_END
+
     void getTickets(const HttpRequestPtr &req,
                     std::function<void(const HttpResponsePtr &)> &&callback,
                     int p1, std::string p2);
