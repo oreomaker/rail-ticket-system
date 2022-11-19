@@ -7,6 +7,7 @@
 #include <drogon/orm/Mapper.h>
 #include <jsoncpp/json/value.h>
 #include <trantor/utils/Logger.h>
+#include <jwt-cpp/jwt.h>
 
 using namespace drogon;
 using namespace drogon_model::rail_ticket;
@@ -19,10 +20,9 @@ struct UserRequest {
 class UserController : public drogon::HttpController<UserController> {
 public:
     METHOD_LIST_BEGIN
-    ADD_METHOD_TO(UserController::login, "/user/login", Post, Get);
-    METHOD_ADD(UserController::registerUser, "/token?userId={1}&passwd={2}",
-               Post);
-    METHOD_ADD(UserController::listUser, "/list", Get, "LoginFilter");
+    ADD_METHOD_TO(UserController::login, "/user/login", Post);
+    ADD_METHOD_TO(UserController::registerUser, "/user/register", Post);
+    ADD_METHOD_TO(UserController::listUser, "/user/list", Get, "LoginFilter");
     METHOD_LIST_END
 
     void login(const HttpRequestPtr &req,
