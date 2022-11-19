@@ -7,6 +7,8 @@
 #pragma once
 
 #include <drogon/HttpFilter.h>
+#include <jwt-cpp/jwt.h>
+
 using namespace drogon;
 
 class LoginFilter : public HttpFilter<LoginFilter> {
