@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../models/User.h"
+#include "filters/LoginFilter.h"
 #include <drogon/HttpAppFramework.h>
 #include <drogon/HttpController.h>
 #include <drogon/orm/Criteria.h>

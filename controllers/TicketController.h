@@ -7,15 +7,15 @@ using namespace drogon;
 class TicketController : public drogon::HttpController<TicketController> {
 public:
     METHOD_LIST_BEGIN
-    ADD_METHOD_TO(TicketController::getTickets,
-                  "/absolute/path/{1}/{2}/list", Get);
-
+    ADD_METHOD_TO(TicketController::getTickets, "/ticket", Get);
+    ADD_METHOD_TO(TicketController::buyTickets, "/ticket/buy", Post);
+    ADD_METHOD_TO(TicketController::refundTickets, "/ticket/refund", Post);
     METHOD_LIST_END
 
     void getTickets(const HttpRequestPtr &req,
-                    std::function<void(const HttpResponsePtr &)> &&callback,
-                    int p1, std::string p2);
+                    std::function<void(const HttpResponsePtr &)> &&callback);
     void buyTickets(const HttpRequestPtr &req,
-                    std::function<void(const HttpResponsePtr &)> &&callback,
-                    int p1, std::string p2);
+                    std::function<void(const HttpResponsePtr &)> &&callback);
+    void refundTickets(const HttpRequestPtr &req,
+                    std::function<void(const HttpResponsePtr &)> &&callback); 
 };

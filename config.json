@@ -105,6 +105,11 @@
                 ],
                 "secure_ssl_host": "localhost:8849"
             }
+        },
+        {
+            "name": "UserInfo",
+            "dependencies": [],
+            "config": {}
         }
     ],
     "custom_config": {}

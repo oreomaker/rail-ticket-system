@@ -2,13 +2,18 @@
 
 void TicketController::getTickets(
     const HttpRequestPtr &req,
-    std::function<void(const HttpResponsePtr &)> &&callback, int p1,
-    std::string p2) {
+    std::function<void(const HttpResponsePtr &)> &&callback) {
     LOG_DEBUG << "TicketController::getTickets";
     Json::Value ret;
     ret["result"] = "ok";
-    ret["p1"] = p1;
-    ret["p2"] = p2;
     auto resp = HttpResponse::newHttpJsonResponse(ret);
-    callback(resp);
+    callback(std::move(resp));
 }
+
+void TicketController::buyTickets(
+    const HttpRequestPtr &req,
+    std::function<void(const HttpResponsePtr &)> &&callback) {}
+
+void TicketController::refundTickets(
+    const HttpRequestPtr &req,
+    std::function<void(const HttpResponsePtr &)> &&callback) {}

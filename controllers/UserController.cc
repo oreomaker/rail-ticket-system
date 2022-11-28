@@ -30,19 +30,19 @@ void UserController::login(
             Json::Value ret;
             ret["code"] = 0;
             ret["token"] = token;
-            return callback(HttpResponse::newHttpJsonResponse(ret));
+            return callback(HttpResponse::newHttpJsonResponse(std::move(ret)));
         } else {
             LOG_DEBUG << "login failed";
             Json::Value ret;
             ret["code"] = 1;
             ret["message"] = "wrong password";
-            return callback(HttpResponse::newHttpJsonResponse(ret));
+            return callback(HttpResponse::newHttpJsonResponse(std::move(ret)));
         }
     } catch (orm::UnexpectedRows e) {
         Json::Value ret;
-        ret["status"] = 1;
+        ret["code"] = 1;
         ret["message"] = "User Not Found";
-        return callback(HttpResponse::newHttpJsonResponse(ret));
+        return callback(HttpResponse::newHttpJsonResponse(std::move(ret)));
     }
 }
 
@@ -58,18 +58,18 @@ void UserController::registerUser(
         auto result = mapper.findOne(orm::Criteria(
             User::Cols::_username, orm::CompareOperator::EQ, user.userName));
         Json::Value ret;
-        ret["status"] = 1;
+        ret["code"] = 1;
         ret["message"] = "user has been registered";
-        return callback(HttpResponse::newHttpJsonResponse(ret));
+        return callback(HttpResponse::newHttpJsonResponse(std::move(ret)));
     } catch (orm::UnexpectedRows e) {
         User newUser;
         newUser.setUsername(user.userName);
         newUser.setPassword(user.password);
         mapper.insert(newUser);
 
-        Json::Value res;
-        res["status"] = 0;
-        return callback(HttpResponse::newHttpJsonResponse(res));
+        Json::Value ret;
+        ret["code"] = 0;
+        return callback(HttpResponse::newHttpJsonResponse(std::move(ret)));
     }
 }
 
@@ -80,10 +80,10 @@ void UserController::listUser(
     orm::Mapper<User> mapper(drogon::app().getDbClient());
     auto list = mapper.findAll();
 
-    Json::Value res;
-    res["status"] = 0;
+    Json::Value ret;
+    ret["code"] = 0;
     for (auto &user : list) {
-        res["data"].append(user.toJson());
+        ret["data"].append(user.toJson());
     }
-    return callback(HttpResponse::newHttpJsonResponse(res));
+    return callback(HttpResponse::newHttpJsonResponse(std::move(ret)));
 }
