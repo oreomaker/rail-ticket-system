@@ -44,7 +44,7 @@ class Line
     {
         static const std::string _trip;
         static const std::string _station;
-        static const std::string _order;
+        static const std::string _position;
     };
 
     const static int primaryKeyNumber;
@@ -114,13 +114,13 @@ class Line
     void setStation(const std::string &pStation) noexcept;
     void setStation(std::string &&pStation) noexcept;
 
-    /**  For column order  */
-    ///Get the value of the column order, returns the default value if the column is null
-    const int8_t &getValueOfOrder() const noexcept;
+    /**  For column position  */
+    ///Get the value of the column position, returns the default value if the column is null
+    const int8_t &getValueOfPosition() const noexcept;
     ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
-    const std::shared_ptr<int8_t> &getOrder() const noexcept;
-    ///Set the value of the column order
-    void setOrder(const int8_t &pOrder) noexcept;
+    const std::shared_ptr<int8_t> &getPosition() const noexcept;
+    ///Set the value of the column position
+    void setPosition(const int8_t &pPosition) noexcept;
 
 
     static size_t getColumnNumber() noexcept {  return 3;  }
@@ -142,7 +142,7 @@ class Line
     void updateId(const uint64_t id);
     std::shared_ptr<std::string> trip_;
     std::shared_ptr<std::string> station_;
-    std::shared_ptr<int8_t> order_;
+    std::shared_ptr<int8_t> position_;
     struct MetaData
     {
         const std::string colName_;
@@ -182,7 +182,7 @@ class Line
             sql += "station,";
             ++parametersCount;
         }
-        sql += "order,";
+        sql += "position,";
         ++parametersCount;
         if(!dirtyFlag_[2])
         {

@@ -15,7 +15,7 @@ using namespace drogon_model::rail_ticket;
 
 const std::string Line::Cols::_trip = "trip";
 const std::string Line::Cols::_station = "station";
-const std::string Line::Cols::_order = "order";
+const std::string Line::Cols::_position = "position";
 const std::vector<std::string> Line::primaryKeyName = {"trip","station"};
 const bool Line::hasPrimaryKey = true;
 const std::string Line::tableName = "line";
@@ -23,7 +23,7 @@ const std::string Line::tableName = "line";
 const std::vector<typename Line::MetaData> Line::metaData_={
 {"trip","std::string","varchar(255)",255,0,1,1},
 {"station","std::string","varchar(255)",255,0,1,1},
-{"order","int8_t","tinyint",1,0,0,1}
+{"position","int8_t","tinyint",1,0,0,1}
 };
 const std::string &Line::getColumnName(size_t index) noexcept(false)
 {
@@ -42,9 +42,9 @@ Line::Line(const Row &r, const ssize_t indexOffset) noexcept
         {
             station_=std::make_shared<std::string>(r["station"].as<std::string>());
         }
-        if(!r["order"].isNull())
+        if(!r["position"].isNull())
         {
-            order_=std::make_shared<int8_t>(r["order"].as<int8_t>());
+            position_=std::make_shared<int8_t>(r["position"].as<int8_t>());
         }
     }
     else
@@ -69,7 +69,7 @@ Line::Line(const Row &r, const ssize_t indexOffset) noexcept
         index = offset + 2;
         if(!r[index].isNull())
         {
-            order_=std::make_shared<int8_t>(r[index].as<int8_t>());
+            position_=std::make_shared<int8_t>(r[index].as<int8_t>());
         }
     }
 
@@ -103,7 +103,7 @@ Line::Line(const Json::Value &pJson, const std::vector<std::string> &pMasqueradi
         dirtyFlag_[2] = true;
         if(!pJson[pMasqueradingVector[2]].isNull())
         {
-            order_=std::make_shared<int8_t>((int8_t)pJson[pMasqueradingVector[2]].asInt64());
+            position_=std::make_shared<int8_t>((int8_t)pJson[pMasqueradingVector[2]].asInt64());
         }
     }
 }
@@ -126,12 +126,12 @@ Line::Line(const Json::Value &pJson) noexcept(false)
             station_=std::make_shared<std::string>(pJson["station"].asString());
         }
     }
-    if(pJson.isMember("order"))
+    if(pJson.isMember("position"))
     {
         dirtyFlag_[2]=true;
-        if(!pJson["order"].isNull())
+        if(!pJson["position"].isNull())
         {
-            order_=std::make_shared<int8_t>((int8_t)pJson["order"].asInt64());
+            position_=std::make_shared<int8_t>((int8_t)pJson["position"].asInt64());
         }
     }
 }
@@ -163,7 +163,7 @@ void Line::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[2] = true;
         if(!pJson[pMasqueradingVector[2]].isNull())
         {
-            order_=std::make_shared<int8_t>((int8_t)pJson[pMasqueradingVector[2]].asInt64());
+            position_=std::make_shared<int8_t>((int8_t)pJson[pMasqueradingVector[2]].asInt64());
         }
     }
 }
@@ -184,12 +184,12 @@ void Line::updateByJson(const Json::Value &pJson) noexcept(false)
             station_=std::make_shared<std::string>(pJson["station"].asString());
         }
     }
-    if(pJson.isMember("order"))
+    if(pJson.isMember("position"))
     {
         dirtyFlag_[2] = true;
-        if(!pJson["order"].isNull())
+        if(!pJson["position"].isNull())
         {
-            order_=std::make_shared<int8_t>((int8_t)pJson["order"].asInt64());
+            position_=std::make_shared<int8_t>((int8_t)pJson["position"].asInt64());
         }
     }
 }
@@ -238,20 +238,20 @@ void Line::setStation(std::string &&pStation) noexcept
     dirtyFlag_[1] = true;
 }
 
-const int8_t &Line::getValueOfOrder() const noexcept
+const int8_t &Line::getValueOfPosition() const noexcept
 {
     const static int8_t defaultValue = int8_t();
-    if(order_)
-        return *order_;
+    if(position_)
+        return *position_;
     return defaultValue;
 }
-const std::shared_ptr<int8_t> &Line::getOrder() const noexcept
+const std::shared_ptr<int8_t> &Line::getPosition() const noexcept
 {
-    return order_;
+    return position_;
 }
-void Line::setOrder(const int8_t &pOrder) noexcept
+void Line::setPosition(const int8_t &pPosition) noexcept
 {
-    order_ = std::make_shared<int8_t>(pOrder);
+    position_ = std::make_shared<int8_t>(pPosition);
     dirtyFlag_[2] = true;
 }
 
@@ -268,7 +268,7 @@ const std::vector<std::string> &Line::insertColumns() noexcept
     static const std::vector<std::string> inCols={
         "trip",
         "station",
-        "order"
+        "position"
     };
     return inCols;
 }
@@ -299,9 +299,9 @@ void Line::outputArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[2])
     {
-        if(getOrder())
+        if(getPosition())
         {
-            binder << getValueOfOrder();
+            binder << getValueOfPosition();
         }
         else
         {
@@ -354,9 +354,9 @@ void Line::updateArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[2])
     {
-        if(getOrder())
+        if(getPosition())
         {
-            binder << getValueOfOrder();
+            binder << getValueOfPosition();
         }
         else
         {
@@ -383,13 +383,13 @@ Json::Value Line::toJson() const
     {
         ret["station"]=Json::Value();
     }
-    if(getOrder())
+    if(getPosition())
     {
-        ret["order"]=getValueOfOrder();
+        ret["position"]=getValueOfPosition();
     }
     else
     {
-        ret["order"]=Json::Value();
+        ret["position"]=Json::Value();
     }
     return ret;
 }
@@ -424,9 +424,9 @@ Json::Value Line::toMasqueradedJson(
         }
         if(!pMasqueradingVector[2].empty())
         {
-            if(getOrder())
+            if(getPosition())
             {
-                ret[pMasqueradingVector[2]]=getValueOfOrder();
+                ret[pMasqueradingVector[2]]=getValueOfPosition();
             }
             else
             {
@@ -452,13 +452,13 @@ Json::Value Line::toMasqueradedJson(
     {
         ret["station"]=Json::Value();
     }
-    if(getOrder())
+    if(getPosition())
     {
-        ret["order"]=getValueOfOrder();
+        ret["position"]=getValueOfPosition();
     }
     else
     {
-        ret["order"]=Json::Value();
+        ret["position"]=Json::Value();
     }
     return ret;
 }
@@ -485,9 +485,9 @@ bool Line::validateJsonForCreation(const Json::Value &pJson, std::string &err)
         err="The station column cannot be null";
         return false;
     }
-    if(pJson.isMember("order"))
+    if(pJson.isMember("position"))
     {
-        if(!validJsonOfField(2, "order", pJson["order"], err, true))
+        if(!validJsonOfField(2, "position", pJson["position"], err, true))
             return false;
     }
     return true;
@@ -566,9 +566,9 @@ bool Line::validateJsonForUpdate(const Json::Value &pJson, std::string &err)
         err = "The value of primary key must be set in the json object for update";
         return false;
     }
-    if(pJson.isMember("order"))
+    if(pJson.isMember("position"))
     {
-        if(!validJsonOfField(2, "order", pJson["order"], err, false))
+        if(!validJsonOfField(2, "position", pJson["position"], err, false))
             return false;
     }
     return true;
