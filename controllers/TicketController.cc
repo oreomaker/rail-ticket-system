@@ -17,3 +17,7 @@ void TicketController::buyTickets(
 void TicketController::refundTickets(
     const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback) {}
+
+void TicketController::ticketInfo(
+    const HttpRequestPtr &req,
+    std::function<void(const HttpResponsePtr &)> &&callback) {}
