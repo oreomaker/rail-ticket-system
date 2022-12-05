@@ -45,6 +45,8 @@ class Line
         static const std::string _trip;
         static const std::string _station;
         static const std::string _position;
+        static const std::string _arrive_time;
+        static const std::string _leaving_time;
     };
 
     const static int primaryKeyNumber;
@@ -122,8 +124,28 @@ class Line
     ///Set the value of the column position
     void setPosition(const int8_t &pPosition) noexcept;
 
+    /**  For column arrive_time  */
+    ///Get the value of the column arrive_time, returns the default value if the column is null
+    const std::string &getValueOfArriveTime() const noexcept;
+    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    const std::shared_ptr<std::string> &getArriveTime() const noexcept;
+    ///Set the value of the column arrive_time
+    void setArriveTime(const std::string &pArriveTime) noexcept;
+    void setArriveTime(std::string &&pArriveTime) noexcept;
+    void setArriveTimeToNull() noexcept;
 
-    static size_t getColumnNumber() noexcept {  return 3;  }
+    /**  For column leaving_time  */
+    ///Get the value of the column leaving_time, returns the default value if the column is null
+    const std::string &getValueOfLeavingTime() const noexcept;
+    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    const std::shared_ptr<std::string> &getLeavingTime() const noexcept;
+    ///Set the value of the column leaving_time
+    void setLeavingTime(const std::string &pLeavingTime) noexcept;
+    void setLeavingTime(std::string &&pLeavingTime) noexcept;
+    void setLeavingTimeToNull() noexcept;
+
+
+    static size_t getColumnNumber() noexcept {  return 5;  }
     static const std::string &getColumnName(size_t index) noexcept(false);
 
     Json::Value toJson() const;
@@ -143,6 +165,8 @@ class Line
     std::shared_ptr<std::string> trip_;
     std::shared_ptr<std::string> station_;
     std::shared_ptr<int8_t> position_;
+    std::shared_ptr<std::string> arriveTime_;
+    std::shared_ptr<std::string> leavingTime_;
     struct MetaData
     {
         const std::string colName_;
@@ -154,7 +178,7 @@ class Line
         const bool notNull_;
     };
     static const std::vector<MetaData> metaData_;
-    bool dirtyFlag_[3]={ false };
+    bool dirtyFlag_[5]={ false };
   public:
     static const std::string &sqlForFindingByPrimaryKey()
     {
@@ -188,6 +212,16 @@ class Line
         {
             needSelection=true;
         }
+        if(dirtyFlag_[3])
+        {
+            sql += "arrive_time,";
+            ++parametersCount;
+        }
+        if(dirtyFlag_[4])
+        {
+            sql += "leaving_time,";
+            ++parametersCount;
+        }
         if(parametersCount > 0)
         {
             sql[sql.length()-1]=')';
@@ -214,6 +248,16 @@ class Line
         else
         {
             sql +="default,";
+        }
+        if(dirtyFlag_[3])
+        {
+            sql.append("?,");
+
+        }
+        if(dirtyFlag_[4])
+        {
+            sql.append("?,");
+
         }
         if(parametersCount > 0)
         {

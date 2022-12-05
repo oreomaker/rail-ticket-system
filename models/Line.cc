@@ -16,6 +16,8 @@ using namespace drogon_model::rail_ticket;
 const std::string Line::Cols::_trip = "trip";
 const std::string Line::Cols::_station = "station";
 const std::string Line::Cols::_position = "position";
+const std::string Line::Cols::_arrive_time = "arrive_time";
+const std::string Line::Cols::_leaving_time = "leaving_time";
 const std::vector<std::string> Line::primaryKeyName = {"trip","station"};
 const bool Line::hasPrimaryKey = true;
 const std::string Line::tableName = "line";
@@ -23,7 +25,9 @@ const std::string Line::tableName = "line";
 const std::vector<typename Line::MetaData> Line::metaData_={
 {"trip","std::string","varchar(255)",255,0,1,1},
 {"station","std::string","varchar(255)",255,0,1,1},
-{"position","int8_t","tinyint",1,0,0,1}
+{"position","int8_t","tinyint",1,0,0,1},
+{"arrive_time","std::string","time",0,0,0,0},
+{"leaving_time","std::string","time",0,0,0,0}
 };
 const std::string &Line::getColumnName(size_t index) noexcept(false)
 {
@@ -46,11 +50,19 @@ Line::Line(const Row &r, const ssize_t indexOffset) noexcept
         {
             position_=std::make_shared<int8_t>(r["position"].as<int8_t>());
         }
+        if(!r["arrive_time"].isNull())
+        {
+            arriveTime_=std::make_shared<std::string>(r["arrive_time"].as<std::string>());
+        }
+        if(!r["leaving_time"].isNull())
+        {
+            leavingTime_=std::make_shared<std::string>(r["leaving_time"].as<std::string>());
+        }
     }
     else
     {
         size_t offset = (size_t)indexOffset;
-        if(offset + 3 > r.size())
+        if(offset + 5 > r.size())
         {
             LOG_FATAL << "Invalid SQL result for this model";
             return;
@@ -71,13 +83,23 @@ Line::Line(const Row &r, const ssize_t indexOffset) noexcept
         {
             position_=std::make_shared<int8_t>(r[index].as<int8_t>());
         }
+        index = offset + 3;
+        if(!r[index].isNull())
+        {
+            arriveTime_=std::make_shared<std::string>(r[index].as<std::string>());
+        }
+        index = offset + 4;
+        if(!r[index].isNull())
+        {
+            leavingTime_=std::make_shared<std::string>(r[index].as<std::string>());
+        }
     }
 
 }
 
 Line::Line(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 3)
+    if(pMasqueradingVector.size() != 5)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -104,6 +126,22 @@ Line::Line(const Json::Value &pJson, const std::vector<std::string> &pMasqueradi
         if(!pJson[pMasqueradingVector[2]].isNull())
         {
             position_=std::make_shared<int8_t>((int8_t)pJson[pMasqueradingVector[2]].asInt64());
+        }
+    }
+    if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
+    {
+        dirtyFlag_[3] = true;
+        if(!pJson[pMasqueradingVector[3]].isNull())
+        {
+            arriveTime_=std::make_shared<std::string>(pJson[pMasqueradingVector[3]].asString());
+        }
+    }
+    if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
+    {
+        dirtyFlag_[4] = true;
+        if(!pJson[pMasqueradingVector[4]].isNull())
+        {
+            leavingTime_=std::make_shared<std::string>(pJson[pMasqueradingVector[4]].asString());
         }
     }
 }
@@ -134,12 +172,28 @@ Line::Line(const Json::Value &pJson) noexcept(false)
             position_=std::make_shared<int8_t>((int8_t)pJson["position"].asInt64());
         }
     }
+    if(pJson.isMember("arrive_time"))
+    {
+        dirtyFlag_[3]=true;
+        if(!pJson["arrive_time"].isNull())
+        {
+            arriveTime_=std::make_shared<std::string>(pJson["arrive_time"].asString());
+        }
+    }
+    if(pJson.isMember("leaving_time"))
+    {
+        dirtyFlag_[4]=true;
+        if(!pJson["leaving_time"].isNull())
+        {
+            leavingTime_=std::make_shared<std::string>(pJson["leaving_time"].asString());
+        }
+    }
 }
 
 void Line::updateByMasqueradedJson(const Json::Value &pJson,
                                             const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 3)
+    if(pMasqueradingVector.size() != 5)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -166,6 +220,22 @@ void Line::updateByMasqueradedJson(const Json::Value &pJson,
             position_=std::make_shared<int8_t>((int8_t)pJson[pMasqueradingVector[2]].asInt64());
         }
     }
+    if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
+    {
+        dirtyFlag_[3] = true;
+        if(!pJson[pMasqueradingVector[3]].isNull())
+        {
+            arriveTime_=std::make_shared<std::string>(pJson[pMasqueradingVector[3]].asString());
+        }
+    }
+    if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
+    {
+        dirtyFlag_[4] = true;
+        if(!pJson[pMasqueradingVector[4]].isNull())
+        {
+            leavingTime_=std::make_shared<std::string>(pJson[pMasqueradingVector[4]].asString());
+        }
+    }
 }
 
 void Line::updateByJson(const Json::Value &pJson) noexcept(false)
@@ -190,6 +260,22 @@ void Line::updateByJson(const Json::Value &pJson) noexcept(false)
         if(!pJson["position"].isNull())
         {
             position_=std::make_shared<int8_t>((int8_t)pJson["position"].asInt64());
+        }
+    }
+    if(pJson.isMember("arrive_time"))
+    {
+        dirtyFlag_[3] = true;
+        if(!pJson["arrive_time"].isNull())
+        {
+            arriveTime_=std::make_shared<std::string>(pJson["arrive_time"].asString());
+        }
+    }
+    if(pJson.isMember("leaving_time"))
+    {
+        dirtyFlag_[4] = true;
+        if(!pJson["leaving_time"].isNull())
+        {
+            leavingTime_=std::make_shared<std::string>(pJson["leaving_time"].asString());
         }
     }
 }
@@ -255,6 +341,60 @@ void Line::setPosition(const int8_t &pPosition) noexcept
     dirtyFlag_[2] = true;
 }
 
+const std::string &Line::getValueOfArriveTime() const noexcept
+{
+    const static std::string defaultValue = std::string();
+    if(arriveTime_)
+        return *arriveTime_;
+    return defaultValue;
+}
+const std::shared_ptr<std::string> &Line::getArriveTime() const noexcept
+{
+    return arriveTime_;
+}
+void Line::setArriveTime(const std::string &pArriveTime) noexcept
+{
+    arriveTime_ = std::make_shared<std::string>(pArriveTime);
+    dirtyFlag_[3] = true;
+}
+void Line::setArriveTime(std::string &&pArriveTime) noexcept
+{
+    arriveTime_ = std::make_shared<std::string>(std::move(pArriveTime));
+    dirtyFlag_[3] = true;
+}
+void Line::setArriveTimeToNull() noexcept
+{
+    arriveTime_.reset();
+    dirtyFlag_[3] = true;
+}
+
+const std::string &Line::getValueOfLeavingTime() const noexcept
+{
+    const static std::string defaultValue = std::string();
+    if(leavingTime_)
+        return *leavingTime_;
+    return defaultValue;
+}
+const std::shared_ptr<std::string> &Line::getLeavingTime() const noexcept
+{
+    return leavingTime_;
+}
+void Line::setLeavingTime(const std::string &pLeavingTime) noexcept
+{
+    leavingTime_ = std::make_shared<std::string>(pLeavingTime);
+    dirtyFlag_[4] = true;
+}
+void Line::setLeavingTime(std::string &&pLeavingTime) noexcept
+{
+    leavingTime_ = std::make_shared<std::string>(std::move(pLeavingTime));
+    dirtyFlag_[4] = true;
+}
+void Line::setLeavingTimeToNull() noexcept
+{
+    leavingTime_.reset();
+    dirtyFlag_[4] = true;
+}
+
 void Line::updateId(const uint64_t id)
 {
 }
@@ -268,7 +408,9 @@ const std::vector<std::string> &Line::insertColumns() noexcept
     static const std::vector<std::string> inCols={
         "trip",
         "station",
-        "position"
+        "position",
+        "arrive_time",
+        "leaving_time"
     };
     return inCols;
 }
@@ -308,6 +450,28 @@ void Line::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
+    if(dirtyFlag_[3])
+    {
+        if(getArriveTime())
+        {
+            binder << getValueOfArriveTime();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
+    if(dirtyFlag_[4])
+    {
+        if(getLeavingTime())
+        {
+            binder << getValueOfLeavingTime();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
 }
 
 const std::vector<std::string> Line::updateColumns() const
@@ -324,6 +488,14 @@ const std::vector<std::string> Line::updateColumns() const
     if(dirtyFlag_[2])
     {
         ret.push_back(getColumnName(2));
+    }
+    if(dirtyFlag_[3])
+    {
+        ret.push_back(getColumnName(3));
+    }
+    if(dirtyFlag_[4])
+    {
+        ret.push_back(getColumnName(4));
     }
     return ret;
 }
@@ -363,6 +535,28 @@ void Line::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
+    if(dirtyFlag_[3])
+    {
+        if(getArriveTime())
+        {
+            binder << getValueOfArriveTime();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
+    if(dirtyFlag_[4])
+    {
+        if(getLeavingTime())
+        {
+            binder << getValueOfLeavingTime();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
 }
 Json::Value Line::toJson() const
 {
@@ -391,6 +585,22 @@ Json::Value Line::toJson() const
     {
         ret["position"]=Json::Value();
     }
+    if(getArriveTime())
+    {
+        ret["arrive_time"]=getValueOfArriveTime();
+    }
+    else
+    {
+        ret["arrive_time"]=Json::Value();
+    }
+    if(getLeavingTime())
+    {
+        ret["leaving_time"]=getValueOfLeavingTime();
+    }
+    else
+    {
+        ret["leaving_time"]=Json::Value();
+    }
     return ret;
 }
 
@@ -398,7 +608,7 @@ Json::Value Line::toMasqueradedJson(
     const std::vector<std::string> &pMasqueradingVector) const
 {
     Json::Value ret;
-    if(pMasqueradingVector.size() == 3)
+    if(pMasqueradingVector.size() == 5)
     {
         if(!pMasqueradingVector[0].empty())
         {
@@ -433,6 +643,28 @@ Json::Value Line::toMasqueradedJson(
                 ret[pMasqueradingVector[2]]=Json::Value();
             }
         }
+        if(!pMasqueradingVector[3].empty())
+        {
+            if(getArriveTime())
+            {
+                ret[pMasqueradingVector[3]]=getValueOfArriveTime();
+            }
+            else
+            {
+                ret[pMasqueradingVector[3]]=Json::Value();
+            }
+        }
+        if(!pMasqueradingVector[4].empty())
+        {
+            if(getLeavingTime())
+            {
+                ret[pMasqueradingVector[4]]=getValueOfLeavingTime();
+            }
+            else
+            {
+                ret[pMasqueradingVector[4]]=Json::Value();
+            }
+        }
         return ret;
     }
     LOG_ERROR << "Masquerade failed";
@@ -459,6 +691,22 @@ Json::Value Line::toMasqueradedJson(
     else
     {
         ret["position"]=Json::Value();
+    }
+    if(getArriveTime())
+    {
+        ret["arrive_time"]=getValueOfArriveTime();
+    }
+    else
+    {
+        ret["arrive_time"]=Json::Value();
+    }
+    if(getLeavingTime())
+    {
+        ret["leaving_time"]=getValueOfLeavingTime();
+    }
+    else
+    {
+        ret["leaving_time"]=Json::Value();
     }
     return ret;
 }
@@ -490,13 +738,23 @@ bool Line::validateJsonForCreation(const Json::Value &pJson, std::string &err)
         if(!validJsonOfField(2, "position", pJson["position"], err, true))
             return false;
     }
+    if(pJson.isMember("arrive_time"))
+    {
+        if(!validJsonOfField(3, "arrive_time", pJson["arrive_time"], err, true))
+            return false;
+    }
+    if(pJson.isMember("leaving_time"))
+    {
+        if(!validJsonOfField(4, "leaving_time", pJson["leaving_time"], err, true))
+            return false;
+    }
     return true;
 }
 bool Line::validateMasqueradedJsonForCreation(const Json::Value &pJson,
                                               const std::vector<std::string> &pMasqueradingVector,
                                               std::string &err)
 {
-    if(pMasqueradingVector.size() != 3)
+    if(pMasqueradingVector.size() != 5)
     {
         err = "Bad masquerading vector";
         return false;
@@ -536,6 +794,22 @@ bool Line::validateMasqueradedJsonForCreation(const Json::Value &pJson,
                   return false;
           }
       }
+      if(!pMasqueradingVector[3].empty())
+      {
+          if(pJson.isMember(pMasqueradingVector[3]))
+          {
+              if(!validJsonOfField(3, pMasqueradingVector[3], pJson[pMasqueradingVector[3]], err, true))
+                  return false;
+          }
+      }
+      if(!pMasqueradingVector[4].empty())
+      {
+          if(pJson.isMember(pMasqueradingVector[4]))
+          {
+              if(!validJsonOfField(4, pMasqueradingVector[4], pJson[pMasqueradingVector[4]], err, true))
+                  return false;
+          }
+      }
     }
     catch(const Json::LogicError &e)
     {
@@ -571,13 +845,23 @@ bool Line::validateJsonForUpdate(const Json::Value &pJson, std::string &err)
         if(!validJsonOfField(2, "position", pJson["position"], err, false))
             return false;
     }
+    if(pJson.isMember("arrive_time"))
+    {
+        if(!validJsonOfField(3, "arrive_time", pJson["arrive_time"], err, false))
+            return false;
+    }
+    if(pJson.isMember("leaving_time"))
+    {
+        if(!validJsonOfField(4, "leaving_time", pJson["leaving_time"], err, false))
+            return false;
+    }
     return true;
 }
 bool Line::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
                                             const std::vector<std::string> &pMasqueradingVector,
                                             std::string &err)
 {
-    if(pMasqueradingVector.size() != 3)
+    if(pMasqueradingVector.size() != 5)
     {
         err = "Bad masquerading vector";
         return false;
@@ -606,6 +890,16 @@ bool Line::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
       if(!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2]))
       {
           if(!validJsonOfField(2, pMasqueradingVector[2], pJson[pMasqueradingVector[2]], err, false))
+              return false;
+      }
+      if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
+      {
+          if(!validJsonOfField(3, pMasqueradingVector[3], pJson[pMasqueradingVector[3]], err, false))
+              return false;
+      }
+      if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
+      {
+          if(!validJsonOfField(4, pMasqueradingVector[4], pJson[pMasqueradingVector[4]], err, false))
               return false;
       }
     }
@@ -673,6 +967,28 @@ bool Line::validJsonOfField(size_t index,
                 return false;
             }
             if(!pJson.isInt())
+            {
+                err="Type error in the "+fieldName+" field";
+                return false;
+            }
+            break;
+        case 3:
+            if(pJson.isNull())
+            {
+                return true;
+            }
+            if(!pJson.isString())
+            {
+                err="Type error in the "+fieldName+" field";
+                return false;
+            }
+            break;
+        case 4:
+            if(pJson.isNull())
+            {
+                return true;
+            }
+            if(!pJson.isString())
             {
                 err="Type error in the "+fieldName+" field";
                 return false;

@@ -78,3 +78,5 @@ target_sources(${PROJECT_NAME}
 # ##############################################################################
 
 add_subdirectory(test)
+# client code
+add_subdirectory(client)
