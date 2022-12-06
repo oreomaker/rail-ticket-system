@@ -8,5 +8,6 @@
     "is_fast": false,
     "number_of_connections": 1,
     "timeout": -1.0,
-    "auto_batch": false
+    "auto_batch": false,
+    "client_encoding": "utf8"
 }

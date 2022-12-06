@@ -8,3 +8,5 @@ requirements:
 
 [drogon framework](https://github.com/drogonframework/drogon/wiki/CHN-02-%E5%AE%89%E8%A3%85)
 sqlite3
+
+[cpp-httplib](https://github.com/yhirose/cpp-httplib)
