@@ -1,17 +1,22 @@
 #include "login.h"
+#include <json/json.h>
 
 void LoginClient::login(const std::string &username,
                         const std::string &password) {
-    auto client = HttpClient::newHttpClient("http://www.baidu.com");
+    auto client = HttpClient::newHttpClient("http://localhost");
     auto req = HttpRequest::newHttpRequest();
-    req->setMethod(drogon::Get);
-    req->setPath("/s");
-    req->setParameter("wd", "wx");
-    req->setParameter("oq", "wx");
+    req->setMethod(drogon::Post);
+    req->setPath("/user/login");
 
-    for (int i = 0; i < 10; ++i) {
-        client->sendRequest(req, [](ReqResult result,
-                                    const HttpResponsePtr &response) {
+    Json::Value param;
+
+    param["username"] = username;
+    param["password"] = password;
+
+    req->setBody("dd");
+
+    client->sendRequest(
+        req, [](ReqResult result, const HttpResponsePtr &response) {
             if (result != ReqResult::Ok) {
                 std::cout << "error while sending request to server! result: "
                           << result << std::endl;
@@ -20,14 +25,11 @@ void LoginClient::login(const std::string &username,
 
             std::cout << "receive response!" << std::endl;
             // auto headers=response.
-            ++nth_resp;
             std::cout << response->getBody() << std::endl;
-            auto cookies = response->cookies();
-            for (auto const &cookie : cookies) {
-                std::cout << cookie.first << "=" << cookie.second.value()
-                          << ":domain=" << cookie.second.domain() << std::endl;
-            }
-            std::cout << "count=" << nth_resp << std::endl;
+            // auto cookies = response->cookies();
+            // for (auto const &cookie : cookies) {
+            //     std::cout << cookie.first << "=" << cookie.second.value()
+            //               << ":domain=" << cookie.second.domain() << std::endl;
+            // }
         });
-    }
 }
