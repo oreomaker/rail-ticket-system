@@ -1,4 +1,6 @@
 build/
+
+.DS_Store
 # upload the include file
 # include/
 
