@@ -23,6 +23,7 @@ const std::string Train::Cols::_startTime = "startTime";
 const std::string Train::Cols::_endTime = "endTime";
 const std::string Train::Cols::_duration = "duration";
 const std::string Train::Cols::_status = "status";
+const std::string Train::Cols::_stationNum = "stationNum";
 const std::string Train::primaryKeyName = "id";
 const bool Train::hasPrimaryKey = true;
 const std::string Train::tableName = "train";
@@ -37,7 +38,8 @@ const std::vector<typename Train::MetaData> Train::metaData_={
 {"startTime","std::string","time",0,0,0,1},
 {"endTime","std::string","time",0,0,0,1},
 {"duration","std::string","time",0,0,0,1},
-{"status","int8_t","tinyint",1,0,0,1}
+{"status","int8_t","tinyint",1,0,0,1},
+{"stationNum","int32_t","int",4,0,0,1}
 };
 const std::string &Train::getColumnName(size_t index) noexcept(false)
 {
@@ -88,11 +90,15 @@ Train::Train(const Row &r, const ssize_t indexOffset) noexcept
         {
             status_=std::make_shared<int8_t>(r["status"].as<int8_t>());
         }
+        if(!r["stationNum"].isNull())
+        {
+            stationnum_=std::make_shared<int32_t>(r["stationNum"].as<int32_t>());
+        }
     }
     else
     {
         size_t offset = (size_t)indexOffset;
-        if(offset + 10 > r.size())
+        if(offset + 11 > r.size())
         {
             LOG_FATAL << "Invalid SQL result for this model";
             return;
@@ -148,13 +154,18 @@ Train::Train(const Row &r, const ssize_t indexOffset) noexcept
         {
             status_=std::make_shared<int8_t>(r[index].as<int8_t>());
         }
+        index = offset + 10;
+        if(!r[index].isNull())
+        {
+            stationnum_=std::make_shared<int32_t>(r[index].as<int32_t>());
+        }
     }
 
 }
 
 Train::Train(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 10)
+    if(pMasqueradingVector.size() != 11)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -237,6 +248,14 @@ Train::Train(const Json::Value &pJson, const std::vector<std::string> &pMasquera
         if(!pJson[pMasqueradingVector[9]].isNull())
         {
             status_=std::make_shared<int8_t>((int8_t)pJson[pMasqueradingVector[9]].asInt64());
+        }
+    }
+    if(!pMasqueradingVector[10].empty() && pJson.isMember(pMasqueradingVector[10]))
+    {
+        dirtyFlag_[10] = true;
+        if(!pJson[pMasqueradingVector[10]].isNull())
+        {
+            stationnum_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[10]].asInt64());
         }
     }
 }
@@ -323,12 +342,20 @@ Train::Train(const Json::Value &pJson) noexcept(false)
             status_=std::make_shared<int8_t>((int8_t)pJson["status"].asInt64());
         }
     }
+    if(pJson.isMember("stationNum"))
+    {
+        dirtyFlag_[10]=true;
+        if(!pJson["stationNum"].isNull())
+        {
+            stationnum_=std::make_shared<int32_t>((int32_t)pJson["stationNum"].asInt64());
+        }
+    }
 }
 
 void Train::updateByMasqueradedJson(const Json::Value &pJson,
                                             const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 10)
+    if(pMasqueradingVector.size() != 11)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -412,6 +439,14 @@ void Train::updateByMasqueradedJson(const Json::Value &pJson,
             status_=std::make_shared<int8_t>((int8_t)pJson[pMasqueradingVector[9]].asInt64());
         }
     }
+    if(!pMasqueradingVector[10].empty() && pJson.isMember(pMasqueradingVector[10]))
+    {
+        dirtyFlag_[10] = true;
+        if(!pJson[pMasqueradingVector[10]].isNull())
+        {
+            stationnum_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[10]].asInt64());
+        }
+    }
 }
 
 void Train::updateByJson(const Json::Value &pJson) noexcept(false)
@@ -493,6 +528,14 @@ void Train::updateByJson(const Json::Value &pJson) noexcept(false)
         if(!pJson["status"].isNull())
         {
             status_=std::make_shared<int8_t>((int8_t)pJson["status"].asInt64());
+        }
+    }
+    if(pJson.isMember("stationNum"))
+    {
+        dirtyFlag_[10] = true;
+        if(!pJson["stationNum"].isNull())
+        {
+            stationnum_=std::make_shared<int32_t>((int32_t)pJson["stationNum"].asInt64());
         }
     }
 }
@@ -707,6 +750,23 @@ void Train::setStatus(const int8_t &pStatus) noexcept
     dirtyFlag_[9] = true;
 }
 
+const int32_t &Train::getValueOfStationnum() const noexcept
+{
+    const static int32_t defaultValue = int32_t();
+    if(stationnum_)
+        return *stationnum_;
+    return defaultValue;
+}
+const std::shared_ptr<int32_t> &Train::getStationnum() const noexcept
+{
+    return stationnum_;
+}
+void Train::setStationnum(const int32_t &pStationnum) noexcept
+{
+    stationnum_ = std::make_shared<int32_t>(pStationnum);
+    dirtyFlag_[10] = true;
+}
+
 void Train::updateId(const uint64_t id)
 {
     id_ = std::make_shared<int32_t>(static_cast<int32_t>(id));
@@ -723,7 +783,8 @@ const std::vector<std::string> &Train::insertColumns() noexcept
         "startTime",
         "endTime",
         "duration",
-        "status"
+        "status",
+        "stationNum"
     };
     return inCols;
 }
@@ -829,6 +890,17 @@ void Train::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
+    if(dirtyFlag_[10])
+    {
+        if(getStationnum())
+        {
+            binder << getValueOfStationnum();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
 }
 
 const std::vector<std::string> Train::updateColumns() const
@@ -869,6 +941,10 @@ const std::vector<std::string> Train::updateColumns() const
     if(dirtyFlag_[9])
     {
         ret.push_back(getColumnName(9));
+    }
+    if(dirtyFlag_[10])
+    {
+        ret.push_back(getColumnName(10));
     }
     return ret;
 }
@@ -974,6 +1050,17 @@ void Train::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
+    if(dirtyFlag_[10])
+    {
+        if(getStationnum())
+        {
+            binder << getValueOfStationnum();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
 }
 Json::Value Train::toJson() const
 {
@@ -1058,6 +1145,14 @@ Json::Value Train::toJson() const
     {
         ret["status"]=Json::Value();
     }
+    if(getStationnum())
+    {
+        ret["stationNum"]=getValueOfStationnum();
+    }
+    else
+    {
+        ret["stationNum"]=Json::Value();
+    }
     return ret;
 }
 
@@ -1065,7 +1160,7 @@ Json::Value Train::toMasqueradedJson(
     const std::vector<std::string> &pMasqueradingVector) const
 {
     Json::Value ret;
-    if(pMasqueradingVector.size() == 10)
+    if(pMasqueradingVector.size() == 11)
     {
         if(!pMasqueradingVector[0].empty())
         {
@@ -1177,6 +1272,17 @@ Json::Value Train::toMasqueradedJson(
                 ret[pMasqueradingVector[9]]=Json::Value();
             }
         }
+        if(!pMasqueradingVector[10].empty())
+        {
+            if(getStationnum())
+            {
+                ret[pMasqueradingVector[10]]=getValueOfStationnum();
+            }
+            else
+            {
+                ret[pMasqueradingVector[10]]=Json::Value();
+            }
+        }
         return ret;
     }
     LOG_ERROR << "Masquerade failed";
@@ -1259,6 +1365,14 @@ Json::Value Train::toMasqueradedJson(
     else
     {
         ret["status"]=Json::Value();
+    }
+    if(getStationnum())
+    {
+        ret["stationNum"]=getValueOfStationnum();
+    }
+    else
+    {
+        ret["stationNum"]=Json::Value();
     }
     return ret;
 }
@@ -1350,13 +1464,18 @@ bool Train::validateJsonForCreation(const Json::Value &pJson, std::string &err)
         if(!validJsonOfField(9, "status", pJson["status"], err, true))
             return false;
     }
+    if(pJson.isMember("stationNum"))
+    {
+        if(!validJsonOfField(10, "stationNum", pJson["stationNum"], err, true))
+            return false;
+    }
     return true;
 }
 bool Train::validateMasqueradedJsonForCreation(const Json::Value &pJson,
                                                const std::vector<std::string> &pMasqueradingVector,
                                                std::string &err)
 {
-    if(pMasqueradingVector.size() != 10)
+    if(pMasqueradingVector.size() != 11)
     {
         err = "Bad masquerading vector";
         return false;
@@ -1477,6 +1596,14 @@ bool Train::validateMasqueradedJsonForCreation(const Json::Value &pJson,
                   return false;
           }
       }
+      if(!pMasqueradingVector[10].empty())
+      {
+          if(pJson.isMember(pMasqueradingVector[10]))
+          {
+              if(!validJsonOfField(10, pMasqueradingVector[10], pJson[pMasqueradingVector[10]], err, true))
+                  return false;
+          }
+      }
     }
     catch(const Json::LogicError &e)
     {
@@ -1542,13 +1669,18 @@ bool Train::validateJsonForUpdate(const Json::Value &pJson, std::string &err)
         if(!validJsonOfField(9, "status", pJson["status"], err, false))
             return false;
     }
+    if(pJson.isMember("stationNum"))
+    {
+        if(!validJsonOfField(10, "stationNum", pJson["stationNum"], err, false))
+            return false;
+    }
     return true;
 }
 bool Train::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
                                              const std::vector<std::string> &pMasqueradingVector,
                                              std::string &err)
 {
-    if(pMasqueradingVector.size() != 10)
+    if(pMasqueradingVector.size() != 11)
     {
         err = "Bad masquerading vector";
         return false;
@@ -1607,6 +1739,11 @@ bool Train::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
       if(!pMasqueradingVector[9].empty() && pJson.isMember(pMasqueradingVector[9]))
       {
           if(!validJsonOfField(9, pMasqueradingVector[9], pJson[pMasqueradingVector[9]], err, false))
+              return false;
+      }
+      if(!pMasqueradingVector[10].empty() && pJson.isMember(pMasqueradingVector[10]))
+      {
+          if(!validJsonOfField(10, pMasqueradingVector[10], pJson[pMasqueradingVector[10]], err, false))
               return false;
       }
     }
@@ -1775,6 +1912,18 @@ bool Train::validJsonOfField(size_t index,
             }
             break;
         case 9:
+            if(pJson.isNull())
+            {
+                err="The " + fieldName + " column cannot be null";
+                return false;
+            }
+            if(!pJson.isInt())
+            {
+                err="Type error in the "+fieldName+" field";
+                return false;
+            }
+            break;
+        case 10:
             if(pJson.isNull())
             {
                 err="The " + fieldName + " column cannot be null";

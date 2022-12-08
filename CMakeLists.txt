@@ -37,6 +37,15 @@ add_executable(${PROJECT_NAME} main.cc)
 find_package(Drogon CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon)
 
+find_package(fmt CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+
+find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
+target_include_directories(${PROJECT_NAME} PRIVATE ${JWT_CPP_INCLUDE_DIRS})
+
+find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
+target_include_directories(${PROJECT_NAME} PRIVATE ${CPP_HTTPLIB_INCLUDE_DIRS})
+
 # ##############################################################################
 
 if (CMAKE_CXX_STANDARD LESS 17)

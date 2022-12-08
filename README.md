@@ -7,6 +7,13 @@ this is a simple system to buy tickets for a train
 requirements:
 
 [drogon framework](https://github.com/drogonframework/drogon/wiki/CHN-02-%E5%AE%89%E8%A3%85)
-sqlite3
+
+mariadb
 
 [cpp-httplib](https://github.com/yhirose/cpp-httplib)
+
+fmt
+
+jwt-cpp
+
+cpp-httplib

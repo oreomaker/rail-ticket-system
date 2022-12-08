@@ -21,6 +21,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(${PROJECT_NAME} main.cc)
 
+find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
+target_include_directories(${PROJECT_NAME} PRIVATE ${CPP_HTTPLIB_INCLUDE_DIRS})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon)
 

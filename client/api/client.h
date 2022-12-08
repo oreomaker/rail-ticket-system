@@ -1,6 +1,6 @@
 #pragma once
 
-#include "httplib/httplib.h"
+#include <httplib.h>
 #include <iostream>
 #include <json/reader.h>
 #include <json/value.h>
@@ -19,6 +19,7 @@ public:
                                       std::string password);
     // train
     std::pair<int, Json::Value> queryDirect(std::string start, std::string end);
-    std::pair<int, Json::Value> queryTransfer(std::string start, std::string end);
+    std::pair<int, Json::Value> queryTransfer(std::string start,
+                                              std::string end);
 };
 } // namespace rail_ticket
