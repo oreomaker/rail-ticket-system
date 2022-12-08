@@ -6,7 +6,7 @@
 #include <drogon/HttpController.h>
 #include <drogon/orm/Criteria.h>
 #include <drogon/orm/Mapper.h>
-#include <jsoncpp/json/value.h>
+#include <json/value.h>
 #include <trantor/utils/Logger.h>
 #include <jwt-cpp/jwt.h>
 

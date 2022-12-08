@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
+
+set(CMAKE_TOOLCHAIN_FILE "/Users/luis/vcpkg/scripts/buildsystems/vcpkg.cmake"
+  CACHE STRING "Vcpkg toolchain file")
+
 project(rail-ticket-system CXX)
 
 include(CheckIncludeFileCXX)
