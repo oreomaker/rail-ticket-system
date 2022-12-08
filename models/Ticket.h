@@ -48,8 +48,9 @@ class Ticket
         static const std::string _carriage;
         static const std::string _seatPosition;
         static const std::string _available;
-        static const std::string _startStation;
-        static const std::string _endStation;
+        static const std::string _startConstraint;
+        static const std::string _endConstraint;
+        static const std::string _stationFlag;
     };
 
     const static int primaryKeyNumber;
@@ -151,28 +152,38 @@ class Ticket
     ///Set the value of the column available
     void setAvailable(const int32_t &pAvailable) noexcept;
 
-    /**  For column startStation  */
-    ///Get the value of the column startStation, returns the default value if the column is null
-    const std::string &getValueOfStartstation() const noexcept;
+    /**  For column startConstraint  */
+    ///Get the value of the column startConstraint, returns the default value if the column is null
+    const std::string &getValueOfStartconstraint() const noexcept;
     ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
-    const std::shared_ptr<std::string> &getStartstation() const noexcept;
-    ///Set the value of the column startStation
-    void setStartstation(const std::string &pStartstation) noexcept;
-    void setStartstation(std::string &&pStartstation) noexcept;
-    void setStartstationToNull() noexcept;
+    const std::shared_ptr<std::string> &getStartconstraint() const noexcept;
+    ///Set the value of the column startConstraint
+    void setStartconstraint(const std::string &pStartconstraint) noexcept;
+    void setStartconstraint(std::string &&pStartconstraint) noexcept;
+    void setStartconstraintToNull() noexcept;
 
-    /**  For column endStation  */
-    ///Get the value of the column endStation, returns the default value if the column is null
-    const std::string &getValueOfEndstation() const noexcept;
+    /**  For column endConstraint  */
+    ///Get the value of the column endConstraint, returns the default value if the column is null
+    const std::string &getValueOfEndconstraint() const noexcept;
     ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
-    const std::shared_ptr<std::string> &getEndstation() const noexcept;
-    ///Set the value of the column endStation
-    void setEndstation(const std::string &pEndstation) noexcept;
-    void setEndstation(std::string &&pEndstation) noexcept;
-    void setEndstationToNull() noexcept;
+    const std::shared_ptr<std::string> &getEndconstraint() const noexcept;
+    ///Set the value of the column endConstraint
+    void setEndconstraint(const std::string &pEndconstraint) noexcept;
+    void setEndconstraint(std::string &&pEndconstraint) noexcept;
+    void setEndconstraintToNull() noexcept;
+
+    /**  For column stationFlag  */
+    ///Get the value of the column stationFlag, returns the default value if the column is null
+    const std::string &getValueOfStationflag() const noexcept;
+    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    const std::shared_ptr<std::string> &getStationflag() const noexcept;
+    ///Set the value of the column stationFlag
+    void setStationflag(const std::string &pStationflag) noexcept;
+    void setStationflag(std::string &&pStationflag) noexcept;
+    void setStationflagToNull() noexcept;
 
 
-    static size_t getColumnNumber() noexcept {  return 8;  }
+    static size_t getColumnNumber() noexcept {  return 9;  }
     static const std::string &getColumnName(size_t index) noexcept(false);
 
     Json::Value toJson() const;
@@ -195,8 +206,9 @@ class Ticket
     std::shared_ptr<int8_t> carriage_;
     std::shared_ptr<std::string> seatposition_;
     std::shared_ptr<int32_t> available_;
-    std::shared_ptr<std::string> startstation_;
-    std::shared_ptr<std::string> endstation_;
+    std::shared_ptr<std::string> startconstraint_;
+    std::shared_ptr<std::string> endconstraint_;
+    std::shared_ptr<std::string> stationflag_;
     struct MetaData
     {
         const std::string colName_;
@@ -208,7 +220,7 @@ class Ticket
         const bool notNull_;
     };
     static const std::vector<MetaData> metaData_;
-    bool dirtyFlag_[8]={ false };
+    bool dirtyFlag_[9]={ false };
   public:
     static const std::string &sqlForFindingByPrimaryKey()
     {
@@ -255,12 +267,17 @@ class Ticket
         }
         if(dirtyFlag_[6])
         {
-            sql += "startStation,";
+            sql += "startConstraint,";
             ++parametersCount;
         }
         if(dirtyFlag_[7])
         {
-            sql += "endStation,";
+            sql += "endConstraint,";
+            ++parametersCount;
+        }
+        if(dirtyFlag_[8])
+        {
+            sql += "stationFlag,";
             ++parametersCount;
         }
         needSelection=true;
@@ -304,6 +321,11 @@ class Ticket
 
         }
         if(dirtyFlag_[7])
+        {
+            sql.append("?,");
+
+        }
+        if(dirtyFlag_[8])
         {
             sql.append("?,");
 

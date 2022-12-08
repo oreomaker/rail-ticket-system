@@ -19,8 +19,9 @@ const std::string Ticket::Cols::_seatType = "seatType";
 const std::string Ticket::Cols::_carriage = "carriage";
 const std::string Ticket::Cols::_seatPosition = "seatPosition";
 const std::string Ticket::Cols::_available = "available";
-const std::string Ticket::Cols::_startStation = "startStation";
-const std::string Ticket::Cols::_endStation = "endStation";
+const std::string Ticket::Cols::_startConstraint = "startConstraint";
+const std::string Ticket::Cols::_endConstraint = "endConstraint";
+const std::string Ticket::Cols::_stationFlag = "stationFlag";
 const std::string Ticket::primaryKeyName = "id";
 const bool Ticket::hasPrimaryKey = true;
 const std::string Ticket::tableName = "ticket";
@@ -32,8 +33,9 @@ const std::vector<typename Ticket::MetaData> Ticket::metaData_={
 {"carriage","int8_t","tinyint",1,0,0,1},
 {"seatPosition","std::string","char(1)",0,0,0,1},
 {"available","int32_t","int",4,0,0,1},
-{"startStation","std::string","varchar(255)",255,0,0,0},
-{"endStation","std::string","varchar(255)",255,0,0,0}
+{"startConstraint","std::string","varchar(255)",255,0,0,0},
+{"endConstraint","std::string","varchar(255)",255,0,0,0},
+{"stationFlag","std::string","varchar(255)",255,0,0,0}
 };
 const std::string &Ticket::getColumnName(size_t index) noexcept(false)
 {
@@ -68,19 +70,23 @@ Ticket::Ticket(const Row &r, const ssize_t indexOffset) noexcept
         {
             available_=std::make_shared<int32_t>(r["available"].as<int32_t>());
         }
-        if(!r["startStation"].isNull())
+        if(!r["startConstraint"].isNull())
         {
-            startstation_=std::make_shared<std::string>(r["startStation"].as<std::string>());
+            startconstraint_=std::make_shared<std::string>(r["startConstraint"].as<std::string>());
         }
-        if(!r["endStation"].isNull())
+        if(!r["endConstraint"].isNull())
         {
-            endstation_=std::make_shared<std::string>(r["endStation"].as<std::string>());
+            endconstraint_=std::make_shared<std::string>(r["endConstraint"].as<std::string>());
+        }
+        if(!r["stationFlag"].isNull())
+        {
+            stationflag_=std::make_shared<std::string>(r["stationFlag"].as<std::string>());
         }
     }
     else
     {
         size_t offset = (size_t)indexOffset;
-        if(offset + 8 > r.size())
+        if(offset + 9 > r.size())
         {
             LOG_FATAL << "Invalid SQL result for this model";
             return;
@@ -119,12 +125,17 @@ Ticket::Ticket(const Row &r, const ssize_t indexOffset) noexcept
         index = offset + 6;
         if(!r[index].isNull())
         {
-            startstation_=std::make_shared<std::string>(r[index].as<std::string>());
+            startconstraint_=std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 7;
         if(!r[index].isNull())
         {
-            endstation_=std::make_shared<std::string>(r[index].as<std::string>());
+            endconstraint_=std::make_shared<std::string>(r[index].as<std::string>());
+        }
+        index = offset + 8;
+        if(!r[index].isNull())
+        {
+            stationflag_=std::make_shared<std::string>(r[index].as<std::string>());
         }
     }
 
@@ -132,7 +143,7 @@ Ticket::Ticket(const Row &r, const ssize_t indexOffset) noexcept
 
 Ticket::Ticket(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 8)
+    if(pMasqueradingVector.size() != 9)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -190,7 +201,7 @@ Ticket::Ticket(const Json::Value &pJson, const std::vector<std::string> &pMasque
         dirtyFlag_[6] = true;
         if(!pJson[pMasqueradingVector[6]].isNull())
         {
-            startstation_=std::make_shared<std::string>(pJson[pMasqueradingVector[6]].asString());
+            startconstraint_=std::make_shared<std::string>(pJson[pMasqueradingVector[6]].asString());
         }
     }
     if(!pMasqueradingVector[7].empty() && pJson.isMember(pMasqueradingVector[7]))
@@ -198,7 +209,15 @@ Ticket::Ticket(const Json::Value &pJson, const std::vector<std::string> &pMasque
         dirtyFlag_[7] = true;
         if(!pJson[pMasqueradingVector[7]].isNull())
         {
-            endstation_=std::make_shared<std::string>(pJson[pMasqueradingVector[7]].asString());
+            endconstraint_=std::make_shared<std::string>(pJson[pMasqueradingVector[7]].asString());
+        }
+    }
+    if(!pMasqueradingVector[8].empty() && pJson.isMember(pMasqueradingVector[8]))
+    {
+        dirtyFlag_[8] = true;
+        if(!pJson[pMasqueradingVector[8]].isNull())
+        {
+            stationflag_=std::make_shared<std::string>(pJson[pMasqueradingVector[8]].asString());
         }
     }
 }
@@ -253,20 +272,28 @@ Ticket::Ticket(const Json::Value &pJson) noexcept(false)
             available_=std::make_shared<int32_t>((int32_t)pJson["available"].asInt64());
         }
     }
-    if(pJson.isMember("startStation"))
+    if(pJson.isMember("startConstraint"))
     {
         dirtyFlag_[6]=true;
-        if(!pJson["startStation"].isNull())
+        if(!pJson["startConstraint"].isNull())
         {
-            startstation_=std::make_shared<std::string>(pJson["startStation"].asString());
+            startconstraint_=std::make_shared<std::string>(pJson["startConstraint"].asString());
         }
     }
-    if(pJson.isMember("endStation"))
+    if(pJson.isMember("endConstraint"))
     {
         dirtyFlag_[7]=true;
-        if(!pJson["endStation"].isNull())
+        if(!pJson["endConstraint"].isNull())
         {
-            endstation_=std::make_shared<std::string>(pJson["endStation"].asString());
+            endconstraint_=std::make_shared<std::string>(pJson["endConstraint"].asString());
+        }
+    }
+    if(pJson.isMember("stationFlag"))
+    {
+        dirtyFlag_[8]=true;
+        if(!pJson["stationFlag"].isNull())
+        {
+            stationflag_=std::make_shared<std::string>(pJson["stationFlag"].asString());
         }
     }
 }
@@ -274,7 +301,7 @@ Ticket::Ticket(const Json::Value &pJson) noexcept(false)
 void Ticket::updateByMasqueradedJson(const Json::Value &pJson,
                                             const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 8)
+    if(pMasqueradingVector.size() != 9)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -331,7 +358,7 @@ void Ticket::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[6] = true;
         if(!pJson[pMasqueradingVector[6]].isNull())
         {
-            startstation_=std::make_shared<std::string>(pJson[pMasqueradingVector[6]].asString());
+            startconstraint_=std::make_shared<std::string>(pJson[pMasqueradingVector[6]].asString());
         }
     }
     if(!pMasqueradingVector[7].empty() && pJson.isMember(pMasqueradingVector[7]))
@@ -339,7 +366,15 @@ void Ticket::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[7] = true;
         if(!pJson[pMasqueradingVector[7]].isNull())
         {
-            endstation_=std::make_shared<std::string>(pJson[pMasqueradingVector[7]].asString());
+            endconstraint_=std::make_shared<std::string>(pJson[pMasqueradingVector[7]].asString());
+        }
+    }
+    if(!pMasqueradingVector[8].empty() && pJson.isMember(pMasqueradingVector[8]))
+    {
+        dirtyFlag_[8] = true;
+        if(!pJson[pMasqueradingVector[8]].isNull())
+        {
+            stationflag_=std::make_shared<std::string>(pJson[pMasqueradingVector[8]].asString());
         }
     }
 }
@@ -393,20 +428,28 @@ void Ticket::updateByJson(const Json::Value &pJson) noexcept(false)
             available_=std::make_shared<int32_t>((int32_t)pJson["available"].asInt64());
         }
     }
-    if(pJson.isMember("startStation"))
+    if(pJson.isMember("startConstraint"))
     {
         dirtyFlag_[6] = true;
-        if(!pJson["startStation"].isNull())
+        if(!pJson["startConstraint"].isNull())
         {
-            startstation_=std::make_shared<std::string>(pJson["startStation"].asString());
+            startconstraint_=std::make_shared<std::string>(pJson["startConstraint"].asString());
         }
     }
-    if(pJson.isMember("endStation"))
+    if(pJson.isMember("endConstraint"))
     {
         dirtyFlag_[7] = true;
-        if(!pJson["endStation"].isNull())
+        if(!pJson["endConstraint"].isNull())
         {
-            endstation_=std::make_shared<std::string>(pJson["endStation"].asString());
+            endconstraint_=std::make_shared<std::string>(pJson["endConstraint"].asString());
+        }
+    }
+    if(pJson.isMember("stationFlag"))
+    {
+        dirtyFlag_[8] = true;
+        if(!pJson["stationFlag"].isNull())
+        {
+            stationflag_=std::make_shared<std::string>(pJson["stationFlag"].asString());
         }
     }
 }
@@ -528,58 +571,85 @@ void Ticket::setAvailable(const int32_t &pAvailable) noexcept
     dirtyFlag_[5] = true;
 }
 
-const std::string &Ticket::getValueOfStartstation() const noexcept
+const std::string &Ticket::getValueOfStartconstraint() const noexcept
 {
     const static std::string defaultValue = std::string();
-    if(startstation_)
-        return *startstation_;
+    if(startconstraint_)
+        return *startconstraint_;
     return defaultValue;
 }
-const std::shared_ptr<std::string> &Ticket::getStartstation() const noexcept
+const std::shared_ptr<std::string> &Ticket::getStartconstraint() const noexcept
 {
-    return startstation_;
+    return startconstraint_;
 }
-void Ticket::setStartstation(const std::string &pStartstation) noexcept
+void Ticket::setStartconstraint(const std::string &pStartconstraint) noexcept
 {
-    startstation_ = std::make_shared<std::string>(pStartstation);
+    startconstraint_ = std::make_shared<std::string>(pStartconstraint);
     dirtyFlag_[6] = true;
 }
-void Ticket::setStartstation(std::string &&pStartstation) noexcept
+void Ticket::setStartconstraint(std::string &&pStartconstraint) noexcept
 {
-    startstation_ = std::make_shared<std::string>(std::move(pStartstation));
+    startconstraint_ = std::make_shared<std::string>(std::move(pStartconstraint));
     dirtyFlag_[6] = true;
 }
-void Ticket::setStartstationToNull() noexcept
+void Ticket::setStartconstraintToNull() noexcept
 {
-    startstation_.reset();
+    startconstraint_.reset();
     dirtyFlag_[6] = true;
 }
 
-const std::string &Ticket::getValueOfEndstation() const noexcept
+const std::string &Ticket::getValueOfEndconstraint() const noexcept
 {
     const static std::string defaultValue = std::string();
-    if(endstation_)
-        return *endstation_;
+    if(endconstraint_)
+        return *endconstraint_;
     return defaultValue;
 }
-const std::shared_ptr<std::string> &Ticket::getEndstation() const noexcept
+const std::shared_ptr<std::string> &Ticket::getEndconstraint() const noexcept
 {
-    return endstation_;
+    return endconstraint_;
 }
-void Ticket::setEndstation(const std::string &pEndstation) noexcept
+void Ticket::setEndconstraint(const std::string &pEndconstraint) noexcept
 {
-    endstation_ = std::make_shared<std::string>(pEndstation);
+    endconstraint_ = std::make_shared<std::string>(pEndconstraint);
     dirtyFlag_[7] = true;
 }
-void Ticket::setEndstation(std::string &&pEndstation) noexcept
+void Ticket::setEndconstraint(std::string &&pEndconstraint) noexcept
 {
-    endstation_ = std::make_shared<std::string>(std::move(pEndstation));
+    endconstraint_ = std::make_shared<std::string>(std::move(pEndconstraint));
     dirtyFlag_[7] = true;
 }
-void Ticket::setEndstationToNull() noexcept
+void Ticket::setEndconstraintToNull() noexcept
 {
-    endstation_.reset();
+    endconstraint_.reset();
     dirtyFlag_[7] = true;
+}
+
+const std::string &Ticket::getValueOfStationflag() const noexcept
+{
+    const static std::string defaultValue = std::string();
+    if(stationflag_)
+        return *stationflag_;
+    return defaultValue;
+}
+const std::shared_ptr<std::string> &Ticket::getStationflag() const noexcept
+{
+    return stationflag_;
+}
+void Ticket::setStationflag(const std::string &pStationflag) noexcept
+{
+    stationflag_ = std::make_shared<std::string>(pStationflag);
+    dirtyFlag_[8] = true;
+}
+void Ticket::setStationflag(std::string &&pStationflag) noexcept
+{
+    stationflag_ = std::make_shared<std::string>(std::move(pStationflag));
+    dirtyFlag_[8] = true;
+}
+void Ticket::setStationflagToNull() noexcept
+{
+    stationflag_.reset();
+    dirtyFlag_[8] = true;
 }
 
 void Ticket::updateId(const uint64_t id)
@@ -595,8 +665,9 @@ const std::vector<std::string> &Ticket::insertColumns() noexcept
         "carriage",
         "seatPosition",
         "available",
-        "startStation",
-        "endStation"
+        "startConstraint",
+        "endConstraint",
+        "stationFlag"
     };
     return inCols;
 }
@@ -660,9 +731,9 @@ void Ticket::outputArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[6])
     {
-        if(getStartstation())
+        if(getStartconstraint())
         {
-            binder << getValueOfStartstation();
+            binder << getValueOfStartconstraint();
         }
         else
         {
@@ -671,9 +742,20 @@ void Ticket::outputArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[7])
     {
-        if(getEndstation())
+        if(getEndconstraint())
         {
-            binder << getValueOfEndstation();
+            binder << getValueOfEndconstraint();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
+    if(dirtyFlag_[8])
+    {
+        if(getStationflag())
+        {
+            binder << getValueOfStationflag();
         }
         else
         {
@@ -712,6 +794,10 @@ const std::vector<std::string> Ticket::updateColumns() const
     if(dirtyFlag_[7])
     {
         ret.push_back(getColumnName(7));
+    }
+    if(dirtyFlag_[8])
+    {
+        ret.push_back(getColumnName(8));
     }
     return ret;
 }
@@ -775,9 +861,9 @@ void Ticket::updateArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[6])
     {
-        if(getStartstation())
+        if(getStartconstraint())
         {
-            binder << getValueOfStartstation();
+            binder << getValueOfStartconstraint();
         }
         else
         {
@@ -786,9 +872,20 @@ void Ticket::updateArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[7])
     {
-        if(getEndstation())
+        if(getEndconstraint())
         {
-            binder << getValueOfEndstation();
+            binder << getValueOfEndconstraint();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
+    if(dirtyFlag_[8])
+    {
+        if(getStationflag())
+        {
+            binder << getValueOfStationflag();
         }
         else
         {
@@ -847,21 +944,29 @@ Json::Value Ticket::toJson() const
     {
         ret["available"]=Json::Value();
     }
-    if(getStartstation())
+    if(getStartconstraint())
     {
-        ret["startStation"]=getValueOfStartstation();
+        ret["startConstraint"]=getValueOfStartconstraint();
     }
     else
     {
-        ret["startStation"]=Json::Value();
+        ret["startConstraint"]=Json::Value();
     }
-    if(getEndstation())
+    if(getEndconstraint())
     {
-        ret["endStation"]=getValueOfEndstation();
+        ret["endConstraint"]=getValueOfEndconstraint();
     }
     else
     {
-        ret["endStation"]=Json::Value();
+        ret["endConstraint"]=Json::Value();
+    }
+    if(getStationflag())
+    {
+        ret["stationFlag"]=getValueOfStationflag();
+    }
+    else
+    {
+        ret["stationFlag"]=Json::Value();
     }
     return ret;
 }
@@ -870,7 +975,7 @@ Json::Value Ticket::toMasqueradedJson(
     const std::vector<std::string> &pMasqueradingVector) const
 {
     Json::Value ret;
-    if(pMasqueradingVector.size() == 8)
+    if(pMasqueradingVector.size() == 9)
     {
         if(!pMasqueradingVector[0].empty())
         {
@@ -940,9 +1045,9 @@ Json::Value Ticket::toMasqueradedJson(
         }
         if(!pMasqueradingVector[6].empty())
         {
-            if(getStartstation())
+            if(getStartconstraint())
             {
-                ret[pMasqueradingVector[6]]=getValueOfStartstation();
+                ret[pMasqueradingVector[6]]=getValueOfStartconstraint();
             }
             else
             {
@@ -951,13 +1056,24 @@ Json::Value Ticket::toMasqueradedJson(
         }
         if(!pMasqueradingVector[7].empty())
         {
-            if(getEndstation())
+            if(getEndconstraint())
             {
-                ret[pMasqueradingVector[7]]=getValueOfEndstation();
+                ret[pMasqueradingVector[7]]=getValueOfEndconstraint();
             }
             else
             {
                 ret[pMasqueradingVector[7]]=Json::Value();
+            }
+        }
+        if(!pMasqueradingVector[8].empty())
+        {
+            if(getStationflag())
+            {
+                ret[pMasqueradingVector[8]]=getValueOfStationflag();
+            }
+            else
+            {
+                ret[pMasqueradingVector[8]]=Json::Value();
             }
         }
         return ret;
@@ -1011,21 +1127,29 @@ Json::Value Ticket::toMasqueradedJson(
     {
         ret["available"]=Json::Value();
     }
-    if(getStartstation())
+    if(getStartconstraint())
     {
-        ret["startStation"]=getValueOfStartstation();
+        ret["startConstraint"]=getValueOfStartconstraint();
     }
     else
     {
-        ret["startStation"]=Json::Value();
+        ret["startConstraint"]=Json::Value();
     }
-    if(getEndstation())
+    if(getEndconstraint())
     {
-        ret["endStation"]=getValueOfEndstation();
+        ret["endConstraint"]=getValueOfEndconstraint();
     }
     else
     {
-        ret["endStation"]=Json::Value();
+        ret["endConstraint"]=Json::Value();
+    }
+    if(getStationflag())
+    {
+        ret["stationFlag"]=getValueOfStationflag();
+    }
+    else
+    {
+        ret["stationFlag"]=Json::Value();
     }
     return ret;
 }
@@ -1087,14 +1211,19 @@ bool Ticket::validateJsonForCreation(const Json::Value &pJson, std::string &err)
         err="The available column cannot be null";
         return false;
     }
-    if(pJson.isMember("startStation"))
+    if(pJson.isMember("startConstraint"))
     {
-        if(!validJsonOfField(6, "startStation", pJson["startStation"], err, true))
+        if(!validJsonOfField(6, "startConstraint", pJson["startConstraint"], err, true))
             return false;
     }
-    if(pJson.isMember("endStation"))
+    if(pJson.isMember("endConstraint"))
     {
-        if(!validJsonOfField(7, "endStation", pJson["endStation"], err, true))
+        if(!validJsonOfField(7, "endConstraint", pJson["endConstraint"], err, true))
+            return false;
+    }
+    if(pJson.isMember("stationFlag"))
+    {
+        if(!validJsonOfField(8, "stationFlag", pJson["stationFlag"], err, true))
             return false;
     }
     return true;
@@ -1103,7 +1232,7 @@ bool Ticket::validateMasqueradedJsonForCreation(const Json::Value &pJson,
                                                 const std::vector<std::string> &pMasqueradingVector,
                                                 std::string &err)
 {
-    if(pMasqueradingVector.size() != 8)
+    if(pMasqueradingVector.size() != 9)
     {
         err = "Bad masquerading vector";
         return false;
@@ -1198,6 +1327,14 @@ bool Ticket::validateMasqueradedJsonForCreation(const Json::Value &pJson,
                   return false;
           }
       }
+      if(!pMasqueradingVector[8].empty())
+      {
+          if(pJson.isMember(pMasqueradingVector[8]))
+          {
+              if(!validJsonOfField(8, pMasqueradingVector[8], pJson[pMasqueradingVector[8]], err, true))
+                  return false;
+          }
+      }
     }
     catch(const Json::LogicError &e)
     {
@@ -1243,14 +1380,19 @@ bool Ticket::validateJsonForUpdate(const Json::Value &pJson, std::string &err)
         if(!validJsonOfField(5, "available", pJson["available"], err, false))
             return false;
     }
-    if(pJson.isMember("startStation"))
+    if(pJson.isMember("startConstraint"))
     {
-        if(!validJsonOfField(6, "startStation", pJson["startStation"], err, false))
+        if(!validJsonOfField(6, "startConstraint", pJson["startConstraint"], err, false))
             return false;
     }
-    if(pJson.isMember("endStation"))
+    if(pJson.isMember("endConstraint"))
     {
-        if(!validJsonOfField(7, "endStation", pJson["endStation"], err, false))
+        if(!validJsonOfField(7, "endConstraint", pJson["endConstraint"], err, false))
+            return false;
+    }
+    if(pJson.isMember("stationFlag"))
+    {
+        if(!validJsonOfField(8, "stationFlag", pJson["stationFlag"], err, false))
             return false;
     }
     return true;
@@ -1259,7 +1401,7 @@ bool Ticket::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
                                               const std::vector<std::string> &pMasqueradingVector,
                                               std::string &err)
 {
-    if(pMasqueradingVector.size() != 8)
+    if(pMasqueradingVector.size() != 9)
     {
         err = "Bad masquerading vector";
         return false;
@@ -1308,6 +1450,11 @@ bool Ticket::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
       if(!pMasqueradingVector[7].empty() && pJson.isMember(pMasqueradingVector[7]))
       {
           if(!validJsonOfField(7, pMasqueradingVector[7], pJson[pMasqueradingVector[7]], err, false))
+              return false;
+      }
+      if(!pMasqueradingVector[8].empty() && pJson.isMember(pMasqueradingVector[8]))
+      {
+          if(!validJsonOfField(8, pMasqueradingVector[8], pJson[pMasqueradingVector[8]], err, false))
               return false;
       }
     }
@@ -1433,6 +1580,26 @@ bool Ticket::validJsonOfField(size_t index,
 
             break;
         case 7:
+            if(pJson.isNull())
+            {
+                return true;
+            }
+            if(!pJson.isString())
+            {
+                err="Type error in the "+fieldName+" field";
+                return false;
+            }
+            // asString().length() creates a string object, is there any better way to validate the length?
+            if(pJson.isString() && pJson.asString().length() > 255)
+            {
+                err="String length exceeds limit for the " +
+                    fieldName +
+                    " field (the maximum value is 255)";
+                return false;
+            }
+
+            break;
+        case 8:
             if(pJson.isNull())
             {
                 return true;
