@@ -20,8 +20,11 @@ struct UserRequest { // 用于接收用户注册和登录请求
 class UserController : public drogon::HttpController<UserController> {
 public:
     METHOD_LIST_BEGIN
+    // 用户登录
     ADD_METHOD_TO(UserController::login, "/user/login", Post);
+    // 用户注册
     ADD_METHOD_TO(UserController::registerUser, "/user/register", Post);
+    // 获取用户列表
     ADD_METHOD_TO(UserController::listUser, "/user/list", Get, "LoginFilter");
     METHOD_LIST_END
 

@@ -3,7 +3,6 @@
 #include "plugins/UserInfo.h"
 #include <drogon/orm/Exception.h>
 #include <drogon/orm/Mapper.h>
-#include <exception>
 #include <fmt/format.h>
 #include <json/value.h>
 #include <string>
@@ -73,6 +72,24 @@ std::string TicketController::numTo16Hex(unsigned long num) {
         num = num / 16;
     }
     return s;
+}
+
+std::string TicketController::calculateAmount(float startMile, float endMile,
+                                              int type) {
+    float unit;
+    switch (type) {
+    case 0:
+        unit = 1.47;
+        break;
+    case 1:
+        unit = 0.74;
+        break;
+    case 2:
+        unit = 0.46;
+        break;
+    }
+    float amount = (endMile - startMile) * unit;
+    return fmt::format("{:.2f}", amount);
 }
 
 void TicketController::generateTickets(
@@ -200,8 +217,11 @@ void TicketController::buyTickets(
     ticketOrder.setUsername(
         drogon::app().getPlugin<UserInfo>()->getInfo("username").asString());
     ticketOrder.setSeattype(order.type);
-    // TODO: 车票价格计算
-    ticketOrder.setAmount("10.58");
+    // 计算车票价格
+    std::string amount = this->calculateAmount(
+        *lineStart.getDistance(), *lineEnd.getDistance(), order.type);
+
+    ticketOrder.setAmount(amount);
     ticketOrder.setStart(order.start);
     ticketOrder.setEnd(order.end);
     ticketOrder.setCarriage(ticketRef["carriage"].as<int>());
@@ -232,7 +252,11 @@ void TicketController::buyTickets(
 
 void TicketController::refundTickets(
     const HttpRequestPtr &req,
-    std::function<void(const HttpResponsePtr &)> &&callback) {}
+    std::function<void(const HttpResponsePtr &)> &&callback) {
+    Json::Value ret;
+    ret["code"] = 0;
+    auto resp = HttpResponse::newHttpJsonResponse(ret);
+}
 
 void TicketController::ticketInfo(
     const HttpRequestPtr &req,

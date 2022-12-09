@@ -47,6 +47,7 @@ class Line
         static const std::string _position;
         static const std::string _arrive_time;
         static const std::string _leaving_time;
+        static const std::string _distance;
     };
 
     const static int primaryKeyNumber;
@@ -144,8 +145,17 @@ class Line
     void setLeavingTime(std::string &&pLeavingTime) noexcept;
     void setLeavingTimeToNull() noexcept;
 
+    /**  For column distance  */
+    ///Get the value of the column distance, returns the default value if the column is null
+    const float &getValueOfDistance() const noexcept;
+    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    const std::shared_ptr<float> &getDistance() const noexcept;
+    ///Set the value of the column distance
+    void setDistance(const float &pDistance) noexcept;
+    void setDistanceToNull() noexcept;
 
-    static size_t getColumnNumber() noexcept {  return 5;  }
+
+    static size_t getColumnNumber() noexcept {  return 6;  }
     static const std::string &getColumnName(size_t index) noexcept(false);
 
     Json::Value toJson() const;
@@ -167,6 +177,7 @@ class Line
     std::shared_ptr<int8_t> position_;
     std::shared_ptr<std::string> arriveTime_;
     std::shared_ptr<std::string> leavingTime_;
+    std::shared_ptr<float> distance_;
     struct MetaData
     {
         const std::string colName_;
@@ -178,7 +189,7 @@ class Line
         const bool notNull_;
     };
     static const std::vector<MetaData> metaData_;
-    bool dirtyFlag_[5]={ false };
+    bool dirtyFlag_[6]={ false };
   public:
     static const std::string &sqlForFindingByPrimaryKey()
     {
@@ -222,6 +233,11 @@ class Line
             sql += "leaving_time,";
             ++parametersCount;
         }
+        if(dirtyFlag_[5])
+        {
+            sql += "distance,";
+            ++parametersCount;
+        }
         if(parametersCount > 0)
         {
             sql[sql.length()-1]=')';
@@ -255,6 +271,11 @@ class Line
 
         }
         if(dirtyFlag_[4])
+        {
+            sql.append("?,");
+
+        }
+        if(dirtyFlag_[5])
         {
             sql.append("?,");
 

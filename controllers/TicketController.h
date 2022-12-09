@@ -36,20 +36,31 @@ class TicketController : public drogon::HttpController<TicketController> {
 private:
     // 根据列车生成全部车票插入数据库
     void insertTickets(const std::vector<Train> &tickets);
+    // 生成站线标志
     inline std::bitset<16> gnerateStationFlag(int start, int end);
+    // 二进制数字转16进制字符串
     inline std::string numTo16Hex(unsigned long);
+    // 生成车票价格
+    std::string calculateAmount(float startMile, float endMile, int type);
 
 public:
     METHOD_LIST_BEGIN
+    // 生成车票
     ADD_METHOD_TO(TicketController::generateTickets, "/ticket/generate", Post,
                   "LoginFilter", "AdminFilter");
+    // 查询车票
     ADD_METHOD_TO(TicketController::getTickets,
                   "/ticket?trip={1}&start={2}&end={3}&type={4}", Get,
                   "LineFilter");
+    // 购票
     ADD_METHOD_TO(TicketController::buyTickets, "/ticket/buy", Post,
                   "LoginFilter", "LineFilter");
-    ADD_METHOD_TO(TicketController::refundTickets, "/ticket/refund", Post);
-    ADD_METHOD_TO(TicketController::ticketInfo, "/ticket/info?id={1}", Get);
+    // 退票
+    ADD_METHOD_TO(TicketController::refundTickets, "/ticket/refund", Post,
+                  "LoginFilter");
+    // 根据id查询车票信息
+    ADD_METHOD_TO(TicketController::ticketInfo, "/ticket/info?id={1}", Get,
+                  "LoginFilter");
     METHOD_LIST_END
 
     void
