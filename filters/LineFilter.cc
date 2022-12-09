@@ -13,17 +13,29 @@ using namespace drogon_model::rail_ticket;
 
 void LineFilter::doFilter(const HttpRequestPtr &req, FilterCallback &&fcb,
                           FilterChainCallback &&fccb) {
+    LOG_DEBUG << "LineFilter::doFilter";
+    std::string trip, start, end;
+    if (req->method() == Get) {
+        trip = req->getParameter("trip");
+        start = req->getParameter("start");
+        end = req->getParameter("end");
+    } else if (req->method() == Post) {
+        Json::Value body = *req->getJsonObject();
+        trip = body["trip"].asString();
+        start = body["start"].asString();
+        end = body["end"].asString();
+    }
 
-    orm::Mapper<Line> trainMapper(drogon::app().getDbClient());
-    std::string trip = req->getParameter("trip"), start = req->getParameter("start"), end = req->getParameter("end");
+    orm::Mapper<Line> lineMapper(drogon::app().getDbClient());
     Line lineStart, lineEnd;
     try {
-        lineStart = trainMapper.findOne(
+        lineStart = lineMapper.findOne(
             orm::Criteria(Line::Cols::_trip, orm::CompareOperator::EQ, trip) &&
-            orm::Criteria(Line::Cols::_trip, orm::CompareOperator::EQ, start));
-        lineEnd = trainMapper.findOne(
+            orm::Criteria(Line::Cols::_station, orm::CompareOperator::EQ,
+                          start));
+        lineEnd = lineMapper.findOne(
             orm::Criteria(Line::Cols::_trip, orm::CompareOperator::EQ, trip) &&
-            orm::Criteria(Line::Cols::_trip, orm::CompareOperator::EQ, end));
+            orm::Criteria(Line::Cols::_station, orm::CompareOperator::EQ, end));
     } catch (orm::UnexpectedRows e) { // 未找到线路信息
         Json::Value ret;
         ret["code"] = 1;

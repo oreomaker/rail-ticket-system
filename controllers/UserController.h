@@ -1,19 +1,18 @@
 #pragma once
 
-#include "../models/User.h"
-#include "filters/LoginFilter.h"
+#include "models/User.h"
 #include <drogon/HttpAppFramework.h>
 #include <drogon/HttpController.h>
 #include <drogon/orm/Criteria.h>
 #include <drogon/orm/Mapper.h>
 #include <json/value.h>
-#include <trantor/utils/Logger.h>
 #include <jwt-cpp/jwt.h>
+#include <trantor/utils/Logger.h>
 
 using namespace drogon;
 using namespace drogon_model::rail_ticket;
 
-struct UserRequest {
+struct UserRequest { // 用于接收用户注册和登录请求
     std::string userName;
     std::string password;
 };
