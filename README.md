@@ -1,6 +1,8 @@
 # The Rail Ticket System
 
-this is a simple system to buy tickets for a train
+This is a simple system to simulate the process of buying a rail ticket
+
+It uses [drogon framework](https://github.com/drogonframework/drogon) as the backend and cpp-httplib as the client
 
 ## How to run
 
@@ -15,7 +17,7 @@ in macOS
 brew install mariadb
 ```
 ### Others
-[drogon framework](https://github.com/drogonframework/drogon/wiki/CHN-02-%E5%AE%89%E8%A3%85)
+drogon framework
 
 [cpp-httplib](https://github.com/yhirose/cpp-httplib)
 
@@ -23,7 +25,7 @@ fmt
 
 jwt-cpp
 
-It'll be recommend to install them by vcpkg
+It'll be recommend to install them using vcpkg
 
 ```bash
 git clone https://github.com/Microsoft/vcpkg.git
