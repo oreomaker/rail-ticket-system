@@ -10,6 +10,7 @@ class Client {
 private:
     httplib::Client cli;
     std::string token;
+    std::vector<int> order_ids;
 
 public:
     Client() : cli("localhost"){};
@@ -21,5 +22,10 @@ public:
     std::pair<int, Json::Value> queryDirect(std::string start, std::string end);
     std::pair<int, Json::Value> queryTransfer(std::string start,
                                               std::string end);
+    // ticket
+    std::pair<int, Json::Value> buyTicket(std::string trip, std::string start,
+                                          std::string end, int type);
+    std::pair<int, Json::Value> queryOrder();
+    std::pair<int, Json::Value> refundTicket(int id);
 };
 } // namespace rail_ticket

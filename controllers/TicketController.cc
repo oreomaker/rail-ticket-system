@@ -100,8 +100,10 @@ void TicketController::generateTickets(
     // 暂时采用清空数据库的方式
     auto clientPtr = drogon::app().getDbClient();
     std::string sql = "delete from ticket";
+    std::string sql2 = "delete from ticket_order";
     try {
         clientPtr->execSqlSync(sql);
+        clientPtr->execSqlSync(sql2);
     } catch (const orm::DrogonDbException &e) {
         LOG_ERROR << e.base().what();
         Json::Value ret;
@@ -134,12 +136,12 @@ void TicketController::getTickets(
     // 查找线路信息
     auto clientPtr = drogon::app().getDbClient();
 
-    orm::Mapper<Line> trainMapper(clientPtr);
+    orm::Mapper<Line> lineMapper(clientPtr);
     // 异常已在filter处理
-    Line lineStart = trainMapper.findOne(
+    Line lineStart = lineMapper.findOne(
         orm::Criteria(Line::Cols::_trip, orm::CompareOperator::EQ, trip) &&
         orm::Criteria(Line::Cols::_station, orm::CompareOperator::EQ, start));
-    Line lineEnd = trainMapper.findOne(
+    Line lineEnd = lineMapper.findOne(
         orm::Criteria(Line::Cols::_trip, orm::CompareOperator::EQ, trip) &&
         orm::Criteria(Line::Cols::_station, orm::CompareOperator::EQ, end));
 
@@ -239,8 +241,10 @@ void TicketController::buyTickets(
     std::bitset<16> stationFlagOld(
         ticketRef["stationFlag"].as<unsigned short>());
     sql = fmt::format(
-        "update ticket set available=available-1, stationFlag={} where id={}",
+        "update ticket set available=available-{}, stationFlag={} where id={}",
+        *lineEnd.getPosition() - *lineStart.getPosition(),
         (stationFlagOld | stationFlag).to_ulong(), ticketRef["id"].as<int>());
+    LOG_DEBUG << sql;
     clientPtr->execSqlSync(sql);
 
     // return
@@ -252,10 +256,101 @@ void TicketController::buyTickets(
 
 void TicketController::refundTickets(
     const HttpRequestPtr &req,
+    std::function<void(const HttpResponsePtr &)> &&callback, int id) {
+    LOG_DEBUG << "refundTickets:" << id;
+    auto clientPtr = drogon::app().getDbClient();
+    orm::Mapper<TicketOrder> ticketOrderMapper(clientPtr);
+    try {
+        // 查找订单信息
+        TicketOrder ticketOrder = ticketOrderMapper.findByPrimaryKey(id);
+        // 检查订单是否属于当前用户
+        if (drogon::app()
+                .getPlugin<UserInfo>()
+                ->getInfo("username")
+                .asString() != *ticketOrder.getUsername()) {
+            Json::Value ret;
+            ret["code"] = 1;
+            ret["data"] = "Database error";
+            auto resp = HttpResponse::newHttpJsonResponse(ret);
+        }
+
+        LOG_DEBUG << "refundTickets-----------:" << id;
+        // 更新车票信息
+        // 查找线路信息
+        orm::Mapper<Line> lineMapper(clientPtr);
+        Line lineStart = lineMapper.findOne(
+            orm::Criteria(Line::Cols::_trip, orm::CompareOperator::EQ,
+                          *ticketOrder.getTrip()) &&
+            orm::Criteria(Line::Cols::_station, orm::CompareOperator::EQ,
+                          *ticketOrder.getStart()));
+        Line lineEnd = lineMapper.findOne(
+            orm::Criteria(Line::Cols::_trip, orm::CompareOperator::EQ,
+                          *ticketOrder.getTrip()) &&
+            orm::Criteria(Line::Cols::_station, orm::CompareOperator::EQ,
+                          *ticketOrder.getEnd()));
+        // 查询ticket，获取stationFlag
+        orm::Mapper<Ticket> ticketMapper(clientPtr);
+        Ticket ticket = ticketMapper.findOne(
+            orm::Criteria(Ticket::Cols::_trip, orm::CompareOperator::EQ,
+                          *ticketOrder.getTrip()) &&
+            orm::Criteria(Ticket::Cols::_carriage, orm::CompareOperator::EQ,
+                          *ticketOrder.getCarriage()) &&
+            orm::Criteria(Ticket::Cols::_seatPosition, orm::CompareOperator::EQ,
+                          *ticketOrder.getSeatposition()));
+
+        std::string sql =
+            fmt::format("update ticket set available=available+{}, "
+                        "stationFlag={} where trip='{}' and "
+                        "carriage={} and seatPosition='{}'",
+                        *lineEnd.getPosition() - *lineStart.getPosition(),
+                        (std::bitset<16>(std::stoi(*ticket.getStationflag())) &
+                         (~this->gnerateStationFlag(*lineStart.getPosition(),
+                                                    *lineEnd.getPosition())))
+                            .to_ullong(),
+                        *ticketOrder.getTrip(), *ticketOrder.getCarriage(),
+                        *ticketOrder.getSeatposition());
+
+        LOG_DEBUG << sql;
+
+        clientPtr->execSqlSync(sql);
+
+        // 删除订单
+        ticketOrderMapper.deleteByPrimaryKey(id);
+
+        Json::Value ret;
+        ret["code"] = 0;
+        ret["data"] = "success";
+        auto resp = HttpResponse::newHttpJsonResponse(ret);
+        callback(std::move(resp));
+    } catch (orm::UnexpectedRows e) {
+        Json::Value ret;
+        ret["code"] = 1;
+        ret["data"] = "No ticket";
+        auto resp = HttpResponse::newHttpJsonResponse(ret);
+        callback(std::move(resp));
+    }
+}
+
+void TicketController::queryOrder(
+    const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback) {
+
+    orm::Mapper<TicketOrder> ticketOrderMapper(drogon::app().getDbClient());
+
+    auto username =
+        drogon::app().getPlugin<UserInfo>()->getInfo("username").asString();
+
+    auto ticketOrderList = ticketOrderMapper.findBy(orm::Criteria(
+        TicketOrder::Cols::_username, orm::CompareOperator::EQ, username));
+
     Json::Value ret;
     ret["code"] = 0;
+    for (auto &ticketOrder : ticketOrderList) {
+        ret["data"].append(ticketOrder.toJson());
+    }
+
     auto resp = HttpResponse::newHttpJsonResponse(ret);
+    callback(std::move(resp));
 }
 
 void TicketController::ticketInfo(

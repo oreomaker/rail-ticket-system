@@ -70,8 +70,8 @@ void query() {
                       << "\tEnd Station: "
                       << trip["trip2"]["endStation"].asString() << std::endl;
             std::cout << "Start Time: " << trip["trip1"]["startTime"].asString()
-                      << "\tStart Time: " << trip["trip2"]["startTime"].asString()
-                      << std::endl;
+                      << "\tStart Time: "
+                      << trip["trip2"]["startTime"].asString() << std::endl;
             std::cout << "End Time: " << trip["trip1"]["endTime"].asString()
                       << "\tEnd Time: " << trip["trip2"]["endTime"].asString()
                       << std::endl;
@@ -79,69 +79,88 @@ void query() {
                       << "\tDuration: " << trip["trip2"]["duration"].asString()
                       << std::endl;
             std::cout << "Carriage: " << trip["trip1"]["carriage"].asString()
-                      << "\t\tCarriage: " << trip["trip2"]["carriage"].asString()
-                      << std::endl;
+                      << "\t\tCarriage: "
+                      << trip["trip2"]["carriage"].asString() << std::endl;
             std::cout << "Train Type: " << trip["trip1"]["type"].asString()
                       << "\tTrain Type: " << trip["trip2"]["type"].asString()
                       << std::endl;
-            std::cout << "------------------ Inter  ------------------" << std::endl;
+            std::cout << "------------------ Inter  ------------------"
+                      << std::endl;
             std::cout << "Inter Station: " << trip["interStation"].asString()
                       << std::endl;
             std::cout << "Inter Arrive Time: "
                       << trip["interArriveTime"].asString() << std::endl;
             std::cout << "Inter Leaving Time: "
                       << trip["interLeavingTime"].asString() << std::endl;
-            std::cout << "--------------------------------------------" << std::endl;
+            std::cout << "--------------------------------------------"
+                      << std::endl;
         }
     }
 }
 
-void query_line(){
-    
-}
+void query_line() {}
 
 void buy() {
-    std::string train_id, date, start, end, seat_type;
-    std::cout << "Please enter the train id: " << std::endl;
-    std::cin >> train_id;
-    std::cout << "Please enter the date: " << std::endl;
-    std::cin >> date;
+    std::string trip, date, start, end;
+    int seat_type;
+    std::cout << "Please enter the trip: " << std::endl;
+    std::cin >> trip;
     std::cout << "Please enter the start station: " << std::endl;
     std::cin >> start;
     std::cout << "Please enter the end station: " << std::endl;
     std::cin >> end;
-    std::cout << "Please enter the seat type: " << std::endl;
+    std::cout << "Please enter the seat type(business class: 0, first class: "
+                 "1, second class: 2): "
+              << std::endl;
     std::cin >> seat_type;
-    // auto result = cli.buyTicket(train_id, date, start, end, seat_type);
-    // if (result.first == 0) {
-    //     std::cout << "Buy successfully" << std::endl;
-    //     std::cout << result.second << std::endl;
-    // } else {
-    //     std::cout << result.second << std::endl;
-    // }
+    auto result = cli.buyTicket(trip, start, end, seat_type);
+    if (result.first == 0) {
+        std::cout << "Buy successfully" << std::endl;
+        // std::cout << result.second << std::endl;
+    }
 }
 
 void query_order() {
-    // auto result = cli.queryOrder();
-    // if (result.first == 0) {
-    //     std::cout << "Query successfully" << std::endl;
-    //     std::cout << result.second << std::endl;
-    // } else {
-    //     std::cout << result.second << std::endl;
-    // }
+    auto result = cli.queryOrder();
+    if (result.first == 0) {
+        std::cout << "Query successfully" << std::endl;
+        int i = 1;
+        for (auto order : result.second) {
+            std::cout << "---------" << i << "---------" << std::endl;
+            ++i;
+            std::cout << "Train ID: " << order["trip"].asString() << std::endl;
+            std::cout << "Start Station: " << order["start"].asString()
+                      << std::endl;
+            std::cout << "End Station: " << order["end"].asString()
+                      << std::endl;
+            std::cout << "Carriage: " << order["carriage"].asInt() << std::endl;
+            switch (order["seatType"].asInt()) {
+            case 0:
+                std::cout << "Seat Type: Business Class" << std::endl;
+                break;
+            case 1:
+                std::cout << "Seat Type: First Class" << std::endl;
+                break;
+            case 2:
+                std::cout << "Seat Type: Second Class" << std::endl;
+                break;
+            }
+            std::cout << "Amount: " << order["amount"].asString() << std::endl;
+        }
+    }
 }
 
 void refund() {
-    std::string order_id;
+    query_order();
+    int order_id;
     std::cout << "Please enter the order id: " << std::endl;
     std::cin >> order_id;
-    // auto result = cli.refundTicket(order_id);
-    // if (result.first == 0) {
-    //     std::cout << "Refund successfully" << std::endl;
-    //     std::cout << result.second << std::endl;
-    // } else {
-    //     std::cout << result.second << std::endl;
-    // }
+    auto result = cli.refundTicket(order_id);
+    if (result.first == 0) {
+        std::cout << "Refund successfully" << std::endl;
+    } else {
+        std::cout << result.second.asString() << std::endl;
+    }
 }
 
 int main() {
@@ -175,7 +194,7 @@ int main() {
             printHelp();
         } else if (command == "query") {
             query();
-        } else if(command == "line"){
+        } else if (command == "line") {
             query_line();
         } else if (command == "buy") {
             buy();

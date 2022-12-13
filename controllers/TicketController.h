@@ -55,8 +55,11 @@ public:
     // 购票
     ADD_METHOD_TO(TicketController::buyTickets, "/ticket/buy", Post,
                   "LoginFilter", "LineFilter");
+    // 查询订单
+    ADD_METHOD_TO(TicketController::queryOrder, "/ticket/orders", Get,
+                  "LoginFilter");
     // 退票
-    ADD_METHOD_TO(TicketController::refundTickets, "/ticket/refund", Post,
+    ADD_METHOD_TO(TicketController::refundTickets, "/ticket/refund?id={1}", Post,
                   "LoginFilter");
     // 根据id查询车票信息
     ADD_METHOD_TO(TicketController::ticketInfo, "/ticket/info?id={1}", Get,
@@ -73,8 +76,11 @@ public:
     void buyTickets(const HttpRequestPtr &req,
                     std::function<void(const HttpResponsePtr &)> &&callback,
                     OrderRequest &&order);
+    void queryOrder(const HttpRequestPtr &req,
+                    std::function<void(const HttpResponsePtr &)> &&callback);
     void refundTickets(const HttpRequestPtr &req,
-                       std::function<void(const HttpResponsePtr &)> &&callback);
+                       std::function<void(const HttpResponsePtr &)> &&callback,
+                       int id);
     void ticketInfo(const HttpRequestPtr &req,
                     std::function<void(const HttpResponsePtr &)> &&callback,
                     const std::string &id);
