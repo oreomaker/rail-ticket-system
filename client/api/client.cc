@@ -50,7 +50,30 @@ rail_ticket::Client::queryTransfer(std::string start, std::string end) {
 std::pair<int, Json::Value> rail_ticket::Client::buyTicket(std::string trip,
                                                            std::string start,
                                                            std::string end,
-                                                           int type) {}
+                                                           int type) {
+    httplib::Headers headers;
+    headers.insert(std::make_pair("Authorization", this->token));
+    cli.set_default_headers(headers);
+
+    Json::Value param;
+    param["trip"] = trip;
+    param["start"] = start;
+    param["end"] = end;
+    param["type"] = type;
+
+    auto result =
+        cli.Post("/ticket/buy", param.toStyledString(), "application/json");
+
+    Json::Reader reader;
+    Json::Value res;
+    reader.parse(result->body, res);
+
+    if (res["code"].asInt() == 0) {
+        return std::pair<int, Json::Value>(res["code"].asInt(), res["data"]);
+    } else {
+        return std::pair<int, Json::Value>(res["code"].asInt(), res["msg"]);
+    }
+}
 
 std::pair<int, Json::Value> rail_ticket::Client::queryOrder() {
     httplib::Headers headers;
@@ -79,11 +102,12 @@ std::pair<int, Json::Value> rail_ticket::Client::refundTicket(int order_id) {
     headers.insert(std::make_pair("Authorization", this->token));
     cli.set_default_headers(headers);
 
-    if(order_id >= this->order_ids.size() || order_id < 1) {
+    if (order_id > this->order_ids.size() || order_id < 1) {
         return std::pair<int, Json::Value>(-1, "id out of range");
     }
 
-    auto result = cli.Post("/ticket/refund?id=" + std::to_string(this->order_ids[order_id-1]));
+    auto result = cli.Post("/ticket/refund?id=" +
+                           std::to_string(this->order_ids[order_id - 1]));
 
     Json::Reader reader;
     Json::Value res;

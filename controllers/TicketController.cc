@@ -250,6 +250,7 @@ void TicketController::buyTickets(
     // return
     Json::Value ret;
     ret["code"] = 0;
+    ret["data"] = ticketOrder.toJson();
     auto resp = HttpResponse::newHttpJsonResponse(ret);
     callback(std::move(resp));
 }

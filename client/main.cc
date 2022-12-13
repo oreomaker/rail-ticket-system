@@ -16,7 +16,6 @@ void printHelp() {
     std::cout << "Available commands:" << std::endl;
     std::cout << "  help: print this help message" << std::endl;
     std::cout << "  query: query ticket" << std::endl;
-    std::cout << "  line: query train line info" << std::endl;
     std::cout << "  buy: buy ticket" << std::endl;
     std::cout << "  query_order: query order" << std::endl;
     std::cout << "  refund: refund ticket" << std::endl;
@@ -116,7 +115,29 @@ void buy() {
     auto result = cli.buyTicket(trip, start, end, seat_type);
     if (result.first == 0) {
         std::cout << "Buy successfully" << std::endl;
-        // std::cout << result.second << std::endl;
+        std::cout << "Train ID: " << result.second["trip"].asString()
+                  << std::endl;
+        std::cout << "Start Station: " << result.second["start"].asString()
+                  << std::endl;
+        std::cout << "End Station: " << result.second["end"].asString()
+                  << std::endl;
+        std::cout << "Carriage: " << result.second["carriage"].asInt()
+                  << std::endl;
+        switch (result.second["seatType"].asInt()) {
+        case 0:
+            std::cout << "Seat Type: Business Class" << std::endl;
+            break;
+        case 1:
+            std::cout << "Seat Type: First Class" << std::endl;
+            break;
+        case 2:
+            std::cout << "Seat Type: Second Class" << std::endl;
+            break;
+        }
+        std::cout << "Amount: " << result.second["amount"].asString()
+                  << std::endl;
+    } else {
+        std::cout << "Buy failed" << std::endl;
     }
 }
 
@@ -194,8 +215,6 @@ int main() {
             printHelp();
         } else if (command == "query") {
             query();
-        } else if (command == "line") {
-            query_line();
         } else if (command == "buy") {
             buy();
         } else if (command == "query_order") {
