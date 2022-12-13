@@ -1,32 +1,29 @@
-#define DROGON_TEST_MAIN
-#include <drogon/drogon_test.h>
-#include <drogon/drogon.h>
+#include "../client/api/client.h"
+#include <iostream>
+#include <vector>
 
-DROGON_TEST(BasicTest)
-{
-    // Add your tests here
-}
+using namespace std;
 
-int main(int argc, char** argv) 
-{
-    using namespace drogon;
+int main(int argc, char **argv) {
+    cout << "Test Rail Ticket System" << endl;
+    rail_ticket::Client cli;
 
-    std::promise<void> p1;
-    std::future<void> f1 = p1.get_future();
+    cli.login("admin", "admin");
 
-    // Start the main loop on another thread
-    std::thread thr([&]() {
-        // Queues the promise to be fulfilled after starting the loop
-        app().getLoop()->queueInLoop([&p1]() { p1.set_value(); });
-        app().run();
-    });
+    string trip = "G8924";
+    vector<string> stationList = {"秦皇岛", "北戴河", "滦河",
+                                  "唐山",   "天津西", "北京南"};
 
-    // The future is only satisfied after the event loop started
-    f1.get();
-    int status = test::run(argc, argv);
+    int CASE_NUM = 6 * 5 * 6; // 6 carriage * 5 seat * 6 station
+    for(int i = 0 ; i < CASE_NUM ; i++){
+        int startPos = rand() % 5;
+        int endPos = rand() % (5-startPos) + startPos + 1;
+        cli.buyTicket(trip, stationList[startPos], stationList[endPos], 2);
+        cout << startPos << " " << endPos << endl;
+    }
 
-    // Ask the event loop to shutdown and wait
-    app().getLoop()->queueInLoop([]() { app().quit(); });
-    thr.join();
-    return status;
+    auto res = cli.sum();
+    cout << "Total: " << res.second["data"].asFloat() << endl;
+        
+    return 0;
 }

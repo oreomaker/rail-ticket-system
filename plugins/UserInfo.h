@@ -1,7 +1,7 @@
 /**
  *
  *  UserInfo.h
- *
+ *  存放从token中获得的用户数据
  */
 
 #pragma once

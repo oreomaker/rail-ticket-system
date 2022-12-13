@@ -18,7 +18,7 @@ void TicketController::insertTickets(const std::vector<Train> &trains) {
             "available, startConstraint, endConstraint, stationFlag) values ";
 
         int carriage = *train.getCarriage();
-        int stationNum = *train.getStationnum();
+        int stationNum = *train.getStationnum()-1;
         std::string trip = *train.getTrip();
 
         // 16个站点, 0表示不经过, 1表示经过, 从低位到高位
@@ -198,17 +198,20 @@ void TicketController::buyTickets(
     // 查找符合乘车区间并且按照余票数最大给出结果
     std::string sql = fmt::format(
         "select * from ticket where trip='{}' and seatType={} "
-        "and stationFlag=~((~stationFlag)|{}) "
+        "and stationFlag=~((~stationFlag)|{}) and available>0 "
         "order by available asc , carriage asc",
         order.trip, order.type, this->numTo16Hex(stationFlag.to_ullong()));
 
+    LOG_DEBUG << sql;
     auto ticketList = clientPtr->execSqlSync(sql);
-    if (ticketList.empty()) {
+    LOG_DEBUG << ticketList.size();
+    if (ticketList.size() == 0) {
         Json::Value ret;
         ret["code"] = 1;
         ret["msg"] = "No ticket";
         auto resp = HttpResponse::newHttpJsonResponse(ret);
         callback(std::move(resp));
+        return;
     }
 
     // 生成订单
@@ -393,8 +396,8 @@ void TicketController::totalTicket(const HttpRequestPtr &req,
     auto result = drogon::app().getDbClient()->execSqlSync(sql);
 
     Json::Value ret;
+    ret["code"] = 0;
     if (result.empty()) {
-        ret["data"] = Json::arrayValue;
         ret["data"] = 0;
     } else {
         ret["data"] = result.front()["sum"].as<double>();
