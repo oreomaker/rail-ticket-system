@@ -19,6 +19,7 @@ void printHelp() {
     std::cout << "  buy: buy ticket" << std::endl;
     std::cout << "  query_order: query order" << std::endl;
     std::cout << "  refund: refund ticket" << std::endl;
+    std::cout << "  sum: get total tickets market amount" << std::endl;
     std::cout << "  exit: exit the system" << std::endl;
 }
 
@@ -184,6 +185,15 @@ void refund() {
     }
 }
 
+void sum(){
+    auto result = cli.sum();
+    if (result.first == 0) {
+        std::cout << "Cunrrent Sum: " << result.second["data"].asFloat() << std::endl;
+    } else {
+        std::cout << result.second["msg"].asString() << std::endl;
+    }
+}
+
 int main() {
     std::string username, password, command;
 
@@ -221,7 +231,9 @@ int main() {
             query_order();
         } else if (command == "refund") {
             refund();
-        } else if (command == "exit") {
+        } else if (command == "sum"){
+            sum();
+        }else if (command == "exit") {
             std::cout << "Bye" << std::endl;
             break;
         } else {

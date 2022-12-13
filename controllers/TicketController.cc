@@ -384,3 +384,22 @@ void TicketController::ticketInfo(
         callback(std::move(resp));
     }
 }
+
+void TicketController::totalTicket(const HttpRequestPtr &req,
+                 std::function<void(const HttpResponsePtr &)> &&callback) {
+    LOG_DEBUG << "TicketController::totalTicket";
+    std::string sql = "select SUM(amount) as sum from ticket_order";
+
+    auto result = drogon::app().getDbClient()->execSqlSync(sql);
+
+    Json::Value ret;
+    if (result.empty()) {
+        ret["data"] = Json::arrayValue;
+        ret["data"] = 0;
+    } else {
+        ret["data"] = result.front()["sum"].as<double>();
+    }
+
+    auto resp = HttpResponse::newHttpJsonResponse(ret);
+    callback(std::move(resp));
+}

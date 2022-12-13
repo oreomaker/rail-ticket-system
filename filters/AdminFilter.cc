@@ -25,7 +25,7 @@ void AdminFilter::doFilter(const HttpRequestPtr &req, FilterCallback &&fcb,
         LOG_INFO << "AdminFilter failed";
         Json::Value ret;
         ret["code"] = 1;
-        ret["message"] = "Permision denied";
+        ret["msg"] = "Permision denied";
         auto resp = HttpResponse::newHttpJsonResponse(ret);
         resp->setStatusCode(k401Unauthorized);
         fcb(resp);

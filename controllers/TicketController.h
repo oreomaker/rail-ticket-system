@@ -64,6 +64,9 @@ public:
     // 根据id查询车票信息
     ADD_METHOD_TO(TicketController::ticketInfo, "/ticket/info?id={1}", Get,
                   "LoginFilter");
+    // 获得当前所有车票金额
+    ADD_METHOD_TO(TicketController::totalTicket, "/ticket/total", Get,
+                  "LoginFilter", "AdminFilter");
     METHOD_LIST_END
 
     void
@@ -84,4 +87,6 @@ public:
     void ticketInfo(const HttpRequestPtr &req,
                     std::function<void(const HttpResponsePtr &)> &&callback,
                     const std::string &id);
+    void totalTicket(const HttpRequestPtr &req,
+                    std::function<void(const HttpResponsePtr &)> &&callback);
 };

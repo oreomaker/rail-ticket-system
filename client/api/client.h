@@ -27,5 +27,6 @@ public:
                                           std::string end, int type);
     std::pair<int, Json::Value> queryOrder();
     std::pair<int, Json::Value> refundTicket(int id);
+    std::pair<int, Json::Value> sum();
 };
 } // namespace rail_ticket

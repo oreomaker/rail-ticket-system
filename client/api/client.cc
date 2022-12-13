@@ -115,3 +115,17 @@ std::pair<int, Json::Value> rail_ticket::Client::refundTicket(int order_id) {
 
     return std::pair<int, Json::Value>(res["code"].asInt(), res["data"]);
 }
+
+std::pair<int, Json::Value> rail_ticket::Client::sum(){
+    httplib::Headers headers;
+    headers.insert(std::make_pair("Authorization", this->token));
+    cli.set_default_headers(headers);
+
+    auto result = cli.Get("/ticket/total");
+
+    Json::Reader reader;
+    Json::Value res;
+    reader.parse(result->body, res);
+
+    return std::pair<int, Json::Value>(res["code"].asInt(), res);
+}
